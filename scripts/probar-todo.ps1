@@ -24,12 +24,24 @@ try {
     Remove-Item hola.exe -ErrorAction SilentlyContinue
 } finally { Pop-Location }
 
-foreach ($p in @("proyecto-1\cjpmDemo", "proyecto-1\cangjie", "proyecto-2", "proyecto-3", "proyecto-4")) {
+# Proyecto y entrada simulada para los programas que leen de la consola
+$Proyectos = [ordered]@{
+    "proyecto-1\cjpmDemo"                = ""
+    "proyecto-1\cangjie"                 = ""
+    "proyecto-2\tarea-2-1-consola"       = "Corhuila`n12`n35.5`nyes"
+    "proyecto-2\tarea-2-2-guardar-logs"  = "1`n2`n3`n4`n5"
+    "proyecto-2\tarea-2-3-filtrar-logs"  = "3`n5`n6"
+    "proyecto-3"                         = ""
+    "proyecto-4"                         = ""
+}
+foreach ($p in $Proyectos.Keys) {
     Write-Host "==> $p"
     Push-Location (Join-Path $Cod $p)
     try {
         Invoke-Paso "cjpm build"
-        Invoke-Paso "cjpm run"
+        $entrada = $Proyectos[$p]
+        $entrada | cjpm run
+        if ($LASTEXITCODE -ne 0) { throw "Falló: cjpm run en $p" }
         Invoke-Paso "cjpm test"
     } finally { Pop-Location }
 }

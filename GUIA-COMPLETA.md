@@ -9,13 +9,13 @@ Repositorio de evidencias de la certificación **Cangjie Programming** (Huawei T
 | Proyecto | Paquete cjpm | Contenido |
 |---|---|---|
 | 1 · Setting Up The Work Environment | `hola-cjc`, `cjpmDemo`, `cangjie` | Tu código original (cjc vs cjpm) + prueba unitaria añadida a `cjpmDemo`. |
-| 2 · Log File Management | `log_manager` | Parser de logs con `Option`, conteo por nivel, filtros, búsqueda y rotación. |
+| 2 · Log File Management | `tarea_2_1_consola`, `tarea_2_2_guardar_logs`, `tarea_2_3_filtrar_logs` | **Tu código del curso**: log por consola, guardado en `log.txt` con `try` con recursos, filtrado por nivel con sobrecarga y lambda final. |
 | 3 · System Data Analysis | `data_analysis` | CSV de CPU/memoria, estadísticas, media móvil y anomalías. |
 | 4 · Business Function Optimization | `business_opt` | Strategy para descuentos, O(n²)→O(n) con HashSet, HashMap, memoización. |
 
 **Supuestos tomados**
 1. Lenguaje: **Cangjie** (SDK 1.2.1 instalado y validado en tu equipo) (detectado por `cjpm.toml`, `.cj` y la captura de Huawei Talent). Versión `cjc-version = "1.2.0"`, la de tu `cjpm.toml`.
-2. Los proyectos 2–4 aún no los has hecho en la plataforma: su código es una **implementación de referencia** basada en el título de cada proyecto. Cuando completes cada proyecto en Huawei Talent, compara con las tareas reales y ajusta o reemplaza.
+2. El proyecto 2 es tu código real del curso (13-nov-2026). Los proyectos 3–4 aún no los has hecho en la plataforma: su código es una **implementación de referencia** basada en el título de cada proyecto. Cuando completes cada proyecto en Huawei Talent, compara con las tareas reales y ajusta o reemplaza.
 3. **No se inventan** evidencias ni certificado: `01-proyecto-1.png` ya está; las demás capturas y `certificado.pdf` deben salir de tu cuenta real.
 4. Archivos de otros ecosistemas (`package.json`, `requirements.txt`, `pom.xml`, `build.gradle`, `.env.example`) **no aplican**: Cangjie usa `cjpm.toml` y no hay secretos ni variables de configuración. Crearlos sería ruido y confundiría al evaluador.
 5. Docker es opcional y está en `tools/docker/` para no ensuciar la raíz del repositorio semanal.
@@ -58,15 +58,15 @@ Repositorio de evidencias de la certificación **Cangjie Programming** (Huawei T
     ├── README.md
     ├── certificado.pdf               (pendiente: descárgalo de Huawei Talent)
     ├── evidencias/
-    │   ├── 00-ficha-del-curso.png    (pendiente)
+    │   ├── 00-ficha-del-curso.png    (incluido)
     │   ├── 01-proyecto-1.png         (incluido)
-    │   ├── 02-proyecto-2.png         (pendiente)
+    │   ├── 02-proyecto-2.png         (incluido)
     │   ├── 03-proyecto-3.png         (pendiente)
     │   ├── 04-proyecto-4.png         (pendiente)
     │   └── 05-examen-final.png       (pendiente)
     └── codigo/
         ├── proyecto-1/ (README.md, hola-cjc/main.cj, cjpmDemo/, cangjie/)
-        ├── proyecto-2/ (README.md, cjpm.toml, src/{log_entry,gestor_logs,main,log_test}.cj)
+        ├── proyecto-2/ (README.md, tarea-2-1-consola/, tarea-2-2-guardar-logs/, tarea-2-3-filtrar-logs/ + log.txt)
         ├── proyecto-3/ (README.md, cjpm.toml, src/{muestras,estadisticas,main,estadisticas_test}.cj)
         └── proyecto-4/ (README.md, cjpm.toml, src/{descuentos,pedidos,optimizacion,main,negocio_test}.cj)
 ```
@@ -122,6 +122,9 @@ desktop.ini
 .env
 .env.*
 !.env.example
+
+# Log generado al ejecutar la tarea 2.2
+certification/codigo/proyecto-2/tarea-2-2-guardar-logs/log.txt
 ```
 
 ## `.gitattributes`
@@ -243,12 +246,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        proyecto:
-          - proyecto-1/cjpmDemo
-          - proyecto-1/cangjie
-          - proyecto-2
-          - proyecto-3
-          - proyecto-4
+        include:
+          - proyecto: proyecto-1/cjpmDemo
+            entrada: ""
+          - proyecto: proyecto-1/cangjie
+            entrada: ""
+          - proyecto: proyecto-2/tarea-2-1-consola
+            entrada: 'Corhuila\n12\n35.5\nyes\n'
+          - proyecto: proyecto-2/tarea-2-2-guardar-logs
+            entrada: '1\n2\n3\n4\n5\n'
+          - proyecto: proyecto-2/tarea-2-3-filtrar-logs
+            entrada: '3\n5\n6\n'
+          - proyecto: proyecto-3
+            entrada: ""
+          - proyecto: proyecto-4
+            entrada: ""
     defaults:
       run:
         working-directory: certification/codigo/${{ matrix.proyecto }}
@@ -279,8 +291,8 @@ jobs:
 
       - name: Build
         run: cjpm build
-      - name: Run
-        run: cjpm run
+      - name: Run (con entrada simulada para los programas interactivos)
+        run: printf '${{ matrix.entrada }}' | cjpm run
       - name: Test
         run: cjpm test
 
@@ -336,7 +348,7 @@ echo "== Proyectos de código =="
 for p in proyecto-1 proyecto-2 proyecto-3 proyecto-4; do
   if [ -d "$C/codigo/$p" ] && [ -n "$(ls -A "$C/codigo/$p" 2>/dev/null)" ]; then ok "codigo/$p"; else falta "codigo/$p (con contenido)"; fi
 done
-for t in proyecto-1/cjpmDemo proyecto-1/cangjie proyecto-2 proyecto-3 proyecto-4; do
+for t in proyecto-1/cjpmDemo proyecto-1/cangjie proyecto-2/tarea-2-1-consola proyecto-2/tarea-2-2-guardar-logs proyecto-2/tarea-2-3-filtrar-logs proyecto-3 proyecto-4; do
   [ -f "$C/codigo/$t/cjpm.toml" ] && ok "codigo/$t/cjpm.toml" || falta "codigo/$t/cjpm.toml"
   [ -f "$C/codigo/$t/src/main.cj" ] && ok "codigo/$t/src/main.cj" || falta "codigo/$t/src/main.cj"
 done
@@ -375,9 +387,20 @@ cjc -v
 echo "==> proyecto-1/hola-cjc (cjc)"
 ( cd "$COD/proyecto-1/hola-cjc" && cjc main.cj -o hola && ./hola && rm -f hola )
 
-for p in proyecto-1/cjpmDemo proyecto-1/cangjie proyecto-2 proyecto-3 proyecto-4; do
+# proyecto|entrada simulada para los programas que leen de la consola
+PROYECTOS=(
+  "proyecto-1/cjpmDemo|"
+  "proyecto-1/cangjie|"
+  "proyecto-2/tarea-2-1-consola|Corhuila\n12\n35.5\nyes\n"
+  "proyecto-2/tarea-2-2-guardar-logs|1\n2\n3\n4\n5\n"
+  "proyecto-2/tarea-2-3-filtrar-logs|3\n5\n6\n"
+  "proyecto-3|"
+  "proyecto-4|"
+)
+for item in "${PROYECTOS[@]}"; do
+  p="${item%%|*}"; entrada="${item#*|}"
   echo "==> $p"
-  ( cd "$COD/$p" && cjpm build && cjpm run && cjpm test )
+  ( cd "$COD/$p" && cjpm build && printf "$entrada" | cjpm run && cjpm test )
 done
 echo "Todos los proyectos compilaron, ejecutaron y pasaron sus pruebas."
 ```
@@ -411,12 +434,24 @@ try {
     Remove-Item hola.exe -ErrorAction SilentlyContinue
 } finally { Pop-Location }
 
-foreach ($p in @("proyecto-1\cjpmDemo", "proyecto-1\cangjie", "proyecto-2", "proyecto-3", "proyecto-4")) {
+# Proyecto y entrada simulada para los programas que leen de la consola
+$Proyectos = [ordered]@{
+    "proyecto-1\cjpmDemo"                = ""
+    "proyecto-1\cangjie"                 = ""
+    "proyecto-2\tarea-2-1-consola"       = "Corhuila`n12`n35.5`nyes"
+    "proyecto-2\tarea-2-2-guardar-logs"  = "1`n2`n3`n4`n5"
+    "proyecto-2\tarea-2-3-filtrar-logs"  = "3`n5`n6"
+    "proyecto-3"                         = ""
+    "proyecto-4"                         = ""
+}
+foreach ($p in $Proyectos.Keys) {
     Write-Host "==> $p"
     Push-Location (Join-Path $Cod $p)
     try {
         Invoke-Paso "cjpm build"
-        Invoke-Paso "cjpm run"
+        $entrada = $Proyectos[$p]
+        $entrada | cjpm run
+        if ($LASTEXITCODE -ne 0) { throw "Falló: cjpm run en $p" }
         Invoke-Paso "cjpm test"
     } finally { Pop-Location }
 }
@@ -468,19 +503,44 @@ services:
     command: ["bash", "scripts/probar-todo.sh"]
 ```
 
+## `README.md`
+
+````markdown
+# Certificación · Programación Móvil (Corte 3)
+
+[![Certificación Cangjie CI](https://github.com/Andresfg20/Certificaction/actions/workflows/certification-ci.yml/badge.svg)](https://github.com/Andresfg20/Certificaction/actions/workflows/certification-ci.yml)
+
+Repositorio de evidencias de la certificación **Cangjie Programming** (Huawei ICT Academy) de **Andres Felipe Gomez Anacona**.
+
+👉 Toda la entrega está en [`certification/`](certification/README.md).
+
+| Carpeta | Contenido |
+|---|---|
+| [`certification/`](certification/) | README con ficha y avance, certificado, evidencias y código de los 4 proyectos |
+| [`scripts/`](scripts/) | Validar estructura y compilar/probar todos los proyectos |
+| [`.github/workflows/`](.github/workflows/) | CI: valida estructura, compila, ejecuta y prueba con Cangjie SDK 1.2.1 |
+| [`tools/docker/`](tools/docker/) | Entorno Linux opcional |
+| [`GUIA-COMPLETA.md`](GUIA-COMPLETA.md) | Guía de entorno, comandos y solución de problemas |
+
+```bash
+bash scripts/validar-certificacion.sh   # estructura
+bash scripts/probar-todo.sh             # build + run + test (requiere Cangjie SDK)
+```
+````
+
 ## `certification/README.md`
 
 ````markdown
 # Certificación Corte 3 · Cangjie Programming (Huawei ICT Academy)
 
-[![Certificación Cangjie CI](../../actions/workflows/certification-ci.yml/badge.svg)](../../actions/workflows/certification-ci.yml)
+[![Certificación Cangjie CI](https://github.com/Andresfg20/Certificaction/actions/workflows/certification-ci.yml/badge.svg)](https://github.com/Andresfg20/Certificaction/actions/workflows/certification-ci.yml)
 
 ## Ficha
 
 | Dato | Detalle |
 |---|---|
 | Nombre completo | Andres Felipe Gomez Anacona |
-| Usuario de GitHub | *(tu usuario)* |
+| Usuario de GitHub | [Andresfg20](https://github.com/Andresfg20) |
 | Nombre del curso | Cangjie Programming |
 | Plataforma | Huawei Talent · ICT Academy |
 | Enlace | https://e.huawei.com/en/talent/ict-academy/#/ict-courses-detail?courseId=fvXQlvE-whPqVon6TmjmbXFGBmk |
@@ -496,7 +556,7 @@ services:
 | Proyecto | Fecha de término | Lo aprendido | Captura | Código |
 |---|---|---|---|---|
 | 1. Setting Up The Work Environment | 11 de noviembre de 2026 | Aprendí que el SDK de Cangjie es el paquete con el compilador, las librerías y las herramientas necesarias para programar en el lenguaje, y que hay que configurarlo con las variables de entorno para que el sistema lo reconozca. Entendí la diferencia entre `cjc`, que compila un archivo suelto, y `cjpm`, que crea y gestiona proyectos completos con su archivo `cjpm.toml`. Vi qué hace un IDE (editar, compilar, depurar y organizar todo en un solo lugar) y cómo la relación entre lenguaje y compilador hace que los dos evolucionen juntos. Hice el entorno en macOS, que al ser un sistema Unix funciona casi igual que Linux. | [01-proyecto-1.png](evidencias/01-proyecto-1.png) | [codigo/proyecto-1](codigo/proyecto-1/) |
-| 2. Log File Management | *(pendiente)* | *(pendiente)* | [02-proyecto-2.png](evidencias/02-proyecto-2.png) | [codigo/proyecto-2](codigo/proyecto-2/) |
+| 2. Log File Management | 13 de noviembre de 2026 | Aprendí los tipos de datos básicos de Cangjie (enteros, decimales, booleanos y cadenas) y que hay que convertir los tipos explícitamente porque el lenguaje no mezcla tipos distintos en una operación. Practiqué leer datos de la consola y escribir logs en un archivo, usando `try` con recursos para que el archivo se cierre solo y `catch` para manejar errores como una entrada inválida. Usé `if`, `while` y `for-in` para armar menús que se repiten hasta que el usuario elige salir. Vi cómo definir funciones, sobrecargarlas (mismo nombre, distintos parámetros) y pasarles una lambda como último argumento para filtrar los logs por nivel. | [02-proyecto-2.png](evidencias/02-proyecto-2.png) | [codigo/proyecto-2](codigo/proyecto-2/) |
 | 3. System Data Analysis | *(pendiente)* | *(pendiente)* | [03-proyecto-3.png](evidencias/03-proyecto-3.png) | [codigo/proyecto-3](codigo/proyecto-3/) |
 | 4. Business Function Optimization | *(pendiente)* | *(pendiente)* | [04-proyecto-4.png](evidencias/04-proyecto-4.png) | [codigo/proyecto-4](codigo/proyecto-4/) |
 | Examen final | *(pendiente)* | *(pendiente)* | [05-examen-final.png](evidencias/05-examen-final.png) | — |
@@ -516,7 +576,7 @@ certification/
 │   └── 05-examen-final.png
 └── codigo/
     ├── proyecto-1/   # hola-cjc (cjc), cjpmDemo y cangjie (cjpm)
-    ├── proyecto-2/   # log_manager: parser, filtros y rotación de logs
+    ├── proyecto-2/   # tareas 2.1 consola, 2.2 guardar logs, 2.3 filtrar logs
     ├── proyecto-3/   # data_analysis: estadísticas y anomalías de CPU/memoria
     └── proyecto-4/   # business_opt: Strategy, HashSet/HashMap, memoización
 ```
@@ -537,7 +597,7 @@ Requisito: Cangjie SDK instalado y `cjc -v` respondiendo en la terminal.
 bash scripts/probar-todo.sh
 
 # Un proyecto concreto
-cd certification/codigo/proyecto-2
+cd certification/codigo/proyecto-3
 cjpm build && cjpm run && cjpm test
 ```
 
@@ -702,33 +762,43 @@ main() {
 ````markdown
 # Proyecto 2 · Log File Management
 
-Gestor de logs en Cangjie: interpreta líneas con formato
-`AAAA-MM-DD HH:MM:SS [NIVEL] modulo: mensaje`, descarta líneas corruptas sin detenerse,
-cuenta por nivel, filtra por nivel o módulo, busca texto y simula la rotación de archivos.
+Código desarrollado en las tareas del curso. Cada tarea es un proyecto `cjpm` independiente.
 
-| Archivo | Responsabilidad |
-|---|---|
-| `src/log_entry.cj` | `struct LogEntry` y `parsearLinea()` (devuelve `Option`). |
-| `src/gestor_logs.cj` | `class GestorLogs`: carga, conteo, filtros, búsqueda, rotación y resumen. |
-| `src/main.cj` | Demostración con datos de ejemplo embebidos. |
-| `src/log_test.cj` | Pruebas unitarias (`std.unittest`). |
+| Tarea | Carpeta | Qué hace | Conceptos |
+|---|---|---|---|
+| 2.1 Console Log Generation | `tarea-2-1-consola/` | Pide datos del campus por consola (nombre, edificios, área, si es inteligente) y los imprime como una línea de log con fecha y hora. | Tipos básicos (`String`, `Int64`, `Float64`, `Bool`), conversión explícita con `parse`, `std.env` (stdin), `std.time.DateTime`, interpolación. |
+| 2.2 Log File Saving | `tarea-2-2-guardar-logs/` | Menú repetitivo que guarda eventos (control de acceso, parqueadero, video vigilancia, cuarto de servidores) al final de `log.txt`. | `std.fs.File` en modo `Append`, `try` con recursos, `catch`, `while`, `if / else if`. |
+| 2.3 Log File Analysis | `tarea-2-3-filtrar-logs/` | Lee `log.txt` y filtra las líneas por nivel (TRACE, DEBUG, INFO, WARN, ERROR). | `StringReader`, `for-in` con `where`, sobrecarga de funciones, lambda final (*trailing lambda*). |
 
-Conceptos de Cangjie: `struct`, `class`, `Option<T>` + `match`, `ArrayList`, interpolación de strings, excepciones.
+## Ejecutar
 
 ```bash
-cjpm build
-cjpm run
-cjpm test
+cd tarea-2-1-consola && cjpm run       # responde las 4 preguntas
+cd ../tarea-2-2-guardar-logs && cjpm run   # opciones 1-4 guardan, 5 sale; crea log.txt
+cd ../tarea-2-3-filtrar-logs && cjpm run   # 1-5 filtran por nivel, 6 sale (usa el log.txt incluido)
 ```
+
+Ejecución no interactiva (la usa el CI):
+
+```bash
+printf 'Corhuila\n12\n35.5\nyes\n' | cjpm run    # tarea 2.1
+printf '1\n2\n3\n4\n5\n' | cjpm run               # tarea 2.2
+printf '3\n5\n6\n' | cjpm run                     # tarea 2.3
+```
+
+## Ajustes hechos para el SDK 1.2.1
+
+- `name` en `cjpm.toml`: `tarea-2-1-consola` → `tarea_2_1_consola` (y equivalentes). `cjpm` no acepta guiones en el nombre del paquete, y las tres tareas tenían el mismo nombre copiado.
+- Primera línea `package <nombre>` en cada `main.cj`, obligatoria en el SDK 1.2.1.
 ````
 
-## `certification/codigo/proyecto-2/cjpm.toml`
+## `certification/codigo/proyecto-2/tarea-2-1-consola/cjpm.toml`
 
 ```toml
 [package]
   cjc-version = "1.2.0"
-  name = "log_manager"
-  description = "Proyecto 2 - Log File Management: análisis, filtrado y rotación de logs"
+  name = "tarea_2_1_consola"
+  description = "Proyecto 2 - Log File Management"
   version = "1.0.0"
   target-dir = ""
   src-dir = ""
@@ -743,320 +813,193 @@ cjpm test
 [test-dependencies]
 ```
 
-## `certification/codigo/proyecto-2/src/gestor_logs.cj`
+## `certification/codigo/proyecto-2/tarea-2-1-consola/src/main.cj`
 
 ```swift
-package log_manager
+package tarea_2_1_consola
 
-import std.collection.*
+import std.env.*
+import std.convert.*
+import std.time.*
 
-// Carga, consulta, filtra y rota entradas de log en memoria.
-public class GestorLogs {
-    private let entradas = ArrayList<LogEntry>()
-    private var lineasInvalidas: Int64 = 0
-
-    public func cargar(texto: String): Unit {
-        for (linea in texto.split("\n")) {
-            if (linea.trimAscii().isEmpty()) {
-                continue
-            }
-            match (parsearLinea(linea)) {
-                case Some(e) => entradas.add(e)
-                case None => lineasInvalidas += 1
-            }
-        }
-    }
-
-    public func total(): Int64 {
-        return entradas.size
-    }
-
-    public func invalidas(): Int64 {
-        return lineasInvalidas
-    }
-
-    public func contarPorNivel(nivel: String): Int64 {
-        var n: Int64 = 0
-        for (e in entradas) {
-            if (e.nivel == nivel) {
-                n += 1
-            }
-        }
-        return n
-    }
-
-    public func filtrarPorNivel(nivel: String): ArrayList<LogEntry> {
-        let r = ArrayList<LogEntry>()
-        for (e in entradas) {
-            if (e.nivel == nivel) {
-                r.add(e)
-            }
-        }
-        return r
-    }
-
-    public func filtrarPorModulo(modulo: String): ArrayList<LogEntry> {
-        let r = ArrayList<LogEntry>()
-        for (e in entradas) {
-            if (e.modulo == modulo) {
-                r.add(e)
-            }
-        }
-        return r
-    }
-
-    public func buscar(palabra: String): ArrayList<LogEntry> {
-        let r = ArrayList<LogEntry>()
-        for (e in entradas) {
-            if (e.mensaje.contains(palabra)) {
-                r.add(e)
-            }
-        }
-        return r
-    }
-
-    // Simula la rotación de archivos de log: divide las entradas en bloques
-    // de como máximo `maxPorArchivo` líneas (app.log.1, app.log.2, ...).
-    public func rotar(maxPorArchivo: Int64): ArrayList<ArrayList<LogEntry>> {
-        if (maxPorArchivo <= 0) {
-            throw IllegalArgumentException("maxPorArchivo debe ser mayor que 0")
-        }
-        let archivos = ArrayList<ArrayList<LogEntry>>()
-        var actual = ArrayList<LogEntry>()
-        for (e in entradas) {
-            actual.add(e)
-            if (actual.size == maxPorArchivo) {
-                archivos.add(actual)
-                actual = ArrayList<LogEntry>()
-            }
-        }
-        if (actual.size > 0) {
-            archivos.add(actual)
-        }
-        return archivos
-    }
-
-    public func resumen(): String {
-        var s = "=== Resumen de logs ===\n"
-        s += "Entradas válidas: ${total()}\n"
-        s += "Líneas inválidas: ${invalidas()}\n"
-        for (nivel in NIVELES_VALIDOS) {
-            s += "  ${nivel}: ${contarPorNivel(nivel)}\n"
-        }
-        return s
-    }
+// Imprime una línea de log: fecha y hora, nivel, evento y mensaje
+func logInfo(event: String, message: String) {
+    println("${DateTime.now()} INFO ${event} ${message}")
 }
-```
-
-## `certification/codigo/proyecto-2/src/log_entry.cj`
-
-```swift
-package log_manager
-
-// Modelo de una línea de log y su parser.
-// Formato esperado:  2026-11-12 08:00:01 [ERROR] auth: Contraseña inválida
-
-let NIVELES_VALIDOS: Array<String> = ["DEBUG", "INFO", "WARN", "ERROR"]
-
-public struct LogEntry <: ToString {
-    public let fecha: String
-    public let hora: String
-    public let nivel: String
-    public let modulo: String
-    public let mensaje: String
-
-    public init(fecha: String, hora: String, nivel: String, modulo: String, mensaje: String) {
-        this.fecha = fecha
-        this.hora = hora
-        this.nivel = nivel
-        this.modulo = modulo
-        this.mensaje = mensaje
-    }
-
-    public func toString(): String {
-        return "${fecha} ${hora} [${nivel}] ${modulo}: ${mensaje}"
-    }
-}
-
-public func esNivelValido(nivel: String): Bool {
-    for (n in NIVELES_VALIDOS) {
-        if (n == nivel) {
-            return true
-        }
-    }
-    return false
-}
-
-// Devuelve None si la línea no cumple el formato (en vez de lanzar excepción),
-// así una línea corrupta no detiene el procesamiento del archivo completo.
-public func parsearLinea(linea: String): Option<LogEntry> {
-    let texto = linea.trimAscii()
-    if (texto.isEmpty()) {
-        return None
-    }
-    let posAbre = match (texto.indexOf("[")) {
-        case Some(v) => v
-        case None => return None
-    }
-    let posCierra = match (texto.indexOf("]")) {
-        case Some(v) => v
-        case None => return None
-    }
-    if (posCierra <= posAbre) {
-        return None
-    }
-    let cabecera = texto[0..posAbre].trimAscii()
-    let nivel = texto[(posAbre + 1)..posCierra].trimAscii()
-    let resto = texto[(posCierra + 1)..texto.size].trimAscii()
-
-    let partesCabecera = cabecera.split(" ", removeEmpty: true)
-    if (partesCabecera.size != 2 || !esNivelValido(nivel)) {
-        return None
-    }
-    let posDosPuntos = match (resto.indexOf(":")) {
-        case Some(v) => v
-        case None => return None
-    }
-    let modulo = resto[0..posDosPuntos].trimAscii()
-    let mensaje = resto[(posDosPuntos + 1)..resto.size].trimAscii()
-    if (modulo.isEmpty()) {
-        return None
-    }
-    return Some(LogEntry(partesCabecera[0], partesCabecera[1], nivel, modulo, mensaje))
-}
-```
-
-## `certification/codigo/proyecto-2/src/log_test.cj`
-
-```swift
-package log_manager
-
-import std.unittest.*
-import std.unittest.testmacro.*
-
-let DATOS_PRUEBA: String = """
-2026-11-12 08:00:01 [INFO] server: Inicio
-2026-11-12 08:00:02 [ERROR] auth: Fallo de login
-2026-11-12 08:00:03 [ERROR] db: Conexión perdida
-2026-11-12 08:00:04 [WARN] db: Consulta lenta
-basura
-2026-11-12 08:00:05 [FATAL] x: nivel no soportado
-"""
-
-@Test
-class ParserTest {
-    @TestCase
-    func parseaLineaValida(): Unit {
-        match (parsearLinea("2026-11-12 08:00:01 [INFO] server: Servicio iniciado")) {
-            case Some(e) =>
-                @Expect(e.fecha, "2026-11-12")
-                @Expect(e.hora, "08:00:01")
-                @Expect(e.nivel, "INFO")
-                @Expect(e.modulo, "server")
-                @Expect(e.mensaje, "Servicio iniciado")
-            case None => @Expect(false, true)
-        }
-    }
-
-    @TestCase
-    func toleraRetornoDeCarroDeWindows(): Unit {
-        @Expect(parsearLinea("2026-11-12 08:00:01 [WARN] db: lento\r").isSome(), true)
-    }
-
-    @TestCase
-    func rechazaLineasInvalidas(): Unit {
-        @Expect(parsearLinea("").isNone(), true)
-        @Expect(parsearLinea("sin corchetes").isNone(), true)
-        @Expect(parsearLinea("2026-11-12 08:00:01 [TRACE] a: b").isNone(), true)
-        @Expect(parsearLinea("2026-11-12 08:00:01 [INFO] sin dos puntos").isNone(), true)
-    }
-}
-
-@Test
-class GestorLogsTest {
-    @TestCase
-    func cuentaValidasEInvalidas(): Unit {
-        let g = GestorLogs()
-        g.cargar(DATOS_PRUEBA)
-        @Expect(g.total(), 4)
-        @Expect(g.invalidas(), 2)
-    }
-
-    @TestCase
-    func cuentaYFiltraPorNivel(): Unit {
-        let g = GestorLogs()
-        g.cargar(DATOS_PRUEBA)
-        @Expect(g.contarPorNivel("ERROR"), 2)
-        @Expect(g.contarPorNivel("DEBUG"), 0)
-        @Expect(g.filtrarPorNivel("WARN").size, 1)
-    }
-
-    @TestCase
-    func filtraPorModuloYBusca(): Unit {
-        let g = GestorLogs()
-        g.cargar(DATOS_PRUEBA)
-        @Expect(g.filtrarPorModulo("db").size, 2)
-        @Expect(g.buscar("login").size, 1)
-    }
-
-    @TestCase
-    func rotaEnBloques(): Unit {
-        let g = GestorLogs()
-        g.cargar(DATOS_PRUEBA)
-        let archivos = g.rotar(3)
-        @Expect(archivos.size, 2)
-        @Expect(archivos[0].size, 3)
-        @Expect(archivos[1].size, 1)
-    }
-}
-```
-
-## `certification/codigo/proyecto-2/src/main.cj`
-
-```swift
-package log_manager
-
-// Proyecto 2 · Log File Management
-// Los datos de ejemplo están embebidos para que el programa sea reproducible
-// en cualquier sistema operativo sin depender de rutas de archivos.
-
-let LOG_DE_EJEMPLO: String = """
-2026-11-12 08:00:01 [INFO] server: Servicio iniciado en el puerto 8080
-2026-11-12 08:00:05 [DEBUG] db: Pool de conexiones creado con 10 conexiones
-2026-11-12 08:01:12 [INFO] auth: Usuario andres inició sesión
-2026-11-12 08:02:40 [WARN] db: Consulta lenta de 1200 ms en pedidos
-2026-11-12 08:03:15 [ERROR] auth: Contraseña inválida para usuario invitado
-linea corrupta sin formato
-2026-11-12 08:04:00 [ERROR] server: Tiempo de espera agotado en /api/pedidos
-2026-11-12 08:05:30 [INFO] server: Petición GET /api/productos atendida en 35 ms
-2026-11-12 08:06:45 [WARN] server: Uso de memoria al 85 por ciento
-"""
 
 main(): Int64 {
-    let gestor = GestorLogs()
-    gestor.cargar(LOG_DE_EJEMPLO)
-    print(gestor.resumen())
+    println("Ingrese el nombre del campus:")
+    let campusName: String = getStdIn().readln().getOrThrow()
 
-    println("\n=== Solo errores ===")
-    for (e in gestor.filtrarPorNivel("ERROR")) {
-        println(e.toString())
+    println("Ingrese el número de edificios:")
+    let buildingNum: Int64 = Int64.parse(getStdIn().readln().getOrThrow())
+
+    println("Ingrese el área construida (miles de metros cuadrados):")
+    let buildingArea: Float64 = Float64.parse(getStdIn().readln().getOrThrow())
+
+    println("¿Es un campus inteligente? (yes/no):")
+    let isSmartCampus: Bool = getStdIn().readln().getOrThrow() == "yes"
+
+    var message = "Message: "
+    message += "Campus: ${campusName} "
+    message += "Edificios: ${buildingNum} "
+    message += "Área: ${buildingArea.format(".1")} miles de m2 "
+    message += "Campus inteligente: ${isSmartCampus}"
+
+    logInfo("Event: Entry operation", message)
+    // Pregunta del curso: latitud y longitud irían en Float64 (tienen decimales)
+    return 0
+}
+```
+
+## `certification/codigo/proyecto-2/tarea-2-2-guardar-logs/cjpm.toml`
+
+```toml
+[package]
+  cjc-version = "1.2.0"
+  name = "tarea_2_2_guardar_logs"
+  description = "Proyecto 2 - Log File Management"
+  version = "1.0.0"
+  target-dir = ""
+  src-dir = ""
+  output-type = "executable"
+  compile-option = ""
+  override-compile-option = ""
+  link-option = ""
+  package-configuration = {}
+
+[dependencies]
+
+[test-dependencies]
+```
+
+## `certification/codigo/proyecto-2/tarea-2-2-guardar-logs/src/main.cj`
+
+```swift
+package tarea_2_2_guardar_logs
+
+import std.env.*
+import std.fs.*
+import std.time.*
+
+// Escribe una línea al final del archivo y avisa en consola
+func saveLog(file: File, event: String, message: String) {
+    let line = "${DateTime.now()} INFO Event: ${event} Message: ${message}\n"
+    file.write(line.toArray())
+    println("Event: ${event} Message: ${message} guardado en log.txt")
+}
+
+main(): Int64 {
+    while (true) {
+        // try-with-resources: el archivo se cierra solo al terminar el bloque
+        try (file = File(Path("log.txt"), Append)) {
+            println("Seleccione el dato a guardar: [1] Control de acceso [2] Parqueadero [3] Video vigilancia [4] Cuarto de servidores [5] Salir")
+            let input = getStdIn().readln().getOrThrow()
+
+            if (input == "1") {
+                saveLog(file, "Access Control", "Card Reader Fault")
+            } else if (input == "2") {
+                saveLog(file, "Parking Lot", "Available spaces 890/999")
+            } else if (input == "3") {
+                saveLog(file, "Video Surveillance", "Camera offline")
+            } else if (input == "4") {
+                saveLog(file, "Server Room Monitoring", "Temperature 25.3C Humidity 50.1%")
+            } else if (input == "5") {
+                println("Execution finished!")
+                break
+            } else {
+                println("Opción inválida, intente de nuevo")
+            }
+        } catch (e: Exception) {
+            println("Exception: ${e}")
+            break
+        }
     }
+    return 0
+}
+```
 
-    println("\n=== Módulo db ===")
-    for (e in gestor.filtrarPorModulo("db")) {
-        println(e.toString())
+## `certification/codigo/proyecto-2/tarea-2-3-filtrar-logs/cjpm.toml`
+
+```toml
+[package]
+  cjc-version = "1.2.0"
+  name = "tarea_2_3_filtrar_logs"
+  description = "Proyecto 2 - Log File Management"
+  version = "1.0.0"
+  target-dir = ""
+  src-dir = ""
+  output-type = "executable"
+  compile-option = ""
+  override-compile-option = ""
+  link-option = ""
+  package-configuration = {}
+
+[dependencies]
+
+[test-dependencies]
+```
+
+## `certification/codigo/proyecto-2/tarea-2-3-filtrar-logs/log.txt`
+
+```text
+2025-07-10T07:43:16.160873911+08:00 INFO Event: Access Control Message: Card Reader Exception
+2025-07-10T07:43:17.484151760+08:00 INFO Event: Parking Lot Message: Remaining Spaces 277/999
+2025-07-10T07:43:18.255230047+08:00 INFO Event: Video Surveillance Message: Camera Offline
+2025-07-10T07:43:19.035630407+08:00 INFO Event: Server Room Monitoring Message: Temperature 25.9C and Humidity 50.2%
+```
+
+## `certification/codigo/proyecto-2/tarea-2-3-filtrar-logs/src/main.cj`
+
+```swift
+package tarea_2_3_filtrar_logs
+
+import std.env.*
+import std.fs.*
+import std.io.*
+
+// Versión 1: si el comando es válido, filtra e imprime las líneas con el nivel
+func parseCommand(input: String, valid: String, file: File, target: String): Bool {
+    if (input == valid) {
+        let log = StringReader(file)
+        for (line in log.lines() where line.contains(target)) {
+            println(line)
+        }
+        true
+    } else {
+        false
     }
+}
 
-    println("\n=== Búsqueda: mensajes que contienen 'ms' ===")
-    for (e in gestor.buscar("ms")) {
-        println(e.toString())
+// Versión 2 (sobrecarga): si el comando es válido, ejecuta la función recibida
+func parseCommand(input: String, valid: String, callback: () -> Unit): Bool {
+    if (input == valid) {
+        callback()
+        true
+    } else {
+        false
     }
+}
 
-    println("\n=== Rotación (máx. 3 líneas por archivo) ===")
-    var i: Int64 = 1
-    for (archivo in gestor.rotar(3)) {
-        println("app.log.${i}: ${archivo.size} líneas")
-        i += 1
+main(): Int64 {
+    while (true) {
+        try (file = File(Path("./log.txt"), Read)) {
+            println("Seleccione el nivel a filtrar: [1] trace [2] debug [3] info [4] warn [5] error [6] Salir")
+            let input = getStdIn().readln().getOrThrow()
+
+            if (parseCommand(input, "1", file, "TRACE")) { continue }
+            if (parseCommand(input, "2", file, "DEBUG")) { continue }
+            if (parseCommand(input, "3", file, "INFO")) { continue }
+            if (parseCommand(input, "4", file, "WARN")) { continue }
+            if (parseCommand(input, "5", file, "ERROR")) { continue }
+            // Lambda al final: solo imprime; el break se hace fuera de la lambda
+            if (parseCommand(input, "6") { println("Operation ended") }) { break }
+
+            println("Please select again!")
+        } catch (e: Exception) {
+            println("System exception: ${e}")
+            break
+        }
     }
     return 0
 }
@@ -2009,7 +1952,7 @@ Para la entrega final: pestaña **Actions → Certificación Cangjie CI → Run 
 | YAML del workflow y compose válidos; scripts `bash -n` correctos; paréntesis/llaves balanceados en todos los `.cj` | ✔ |
 | `.gitignore` excluye `target/`, binarios, `.DS_Store`, `__MACOSX` y no excluye PNG/PDF | ✔ |
 | `.gitattributes` fuerza LF en `.cj/.sh/.toml` (evita errores de `\r` en CI) | ✔ |
-| Compilación real con SDK 1.2.1 | ✔ Windows: los 5 proyectos compilan con `cjpm build` y `hola-cjc` con `cjc`. Linux (SDK 1.2.1 x64): `scripts/probar-todo.sh` termina con código 0: build + run + **23/23 pruebas en verde** (cjpmDemo 1, proyecto-2 7, proyecto-3 8, proyecto-4 7). |
+| Compilación real con SDK 1.2.1 | ✔ Windows: los 5 proyectos compilan con `cjpm build` y `hola-cjc` con `cjc`. Linux (SDK 1.2.1 x64): `scripts/probar-todo.sh` termina con código 0: build + run + **16/16 pruebas en verde** (cjpmDemo 1, proyecto-3 8, proyecto-4 7); las 3 tareas del proyecto 2 se ejecutan con entrada simulada. |
 | Declaración `package` | ✔ Cada `.cj` empieza con `package <nombre del cjpm.toml>`: el SDK 1.2.1 la exige cuando el paquete tiene varios archivos. |
 | Evidencias 00, 02–05 y `certificado.pdf` | ⏳ Pendientes: deben salir de tu cuenta real |
 
@@ -2036,10 +1979,10 @@ Para la entrega final: pestaña **Actions → Certificación Cangjie CI → Run 
 - [ ] `bash scripts/probar-todo.sh` (o `.ps1`) termina sin errores
 - [ ] Contenido de `LISTO-PARA-REPO/` copiado a la raíz del repo (con archivos ocultos)
 - [ ] `certification/` al mismo nivel que `01-week … 16-week`
-- [ ] Usuario de GitHub escrito en `certification/README.md`
-- [ ] `evidencias/00-ficha-del-curso.png` (captura de la ficha del curso)
+- [x] Usuario de GitHub escrito en `certification/README.md`
+- [x] `evidencias/00-ficha-del-curso.png`
 - [x] `evidencias/01-proyecto-1.png`
-- [ ] `evidencias/02-proyecto-2.png` + fila del proyecto 2 en el README
+- [x] `evidencias/02-proyecto-2.png` + fila del proyecto 2 en el README
 - [ ] `evidencias/03-proyecto-3.png` + fila del proyecto 3
 - [ ] `evidencias/04-proyecto-4.png` + fila del proyecto 4
 - [ ] `evidencias/05-examen-final.png` + nota del examen

@@ -1,0 +1,4 @@
+2025-07-10T07:43:16.160873911+08:00 INFO Event: Access Control Message: Card Reader Exception
+2025-07-10T07:43:17.484151760+08:00 INFO Event: Parking Lot Message: Remaining Spaces 277/999
+2025-07-10T07:43:18.255230047+08:00 INFO Event: Video Surveillance Message: Camera Offline
+2025-07-10T07:43:19.035630407+08:00 INFO Event: Server Room Monitoring Message: Temperature 25.9C and Humidity 50.2%

@@ -42,3 +42,6 @@ desktop.ini
 .env
 .env.*
 !.env.example
+
+# Log generado al ejecutar la tarea 2.2
+certification/codigo/proyecto-2/tarea-2-2-guardar-logs/log.txt

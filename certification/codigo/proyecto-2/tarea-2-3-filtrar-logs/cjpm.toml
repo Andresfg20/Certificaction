@@ -1,0 +1,16 @@
+[package]
+  cjc-version = "1.2.0"
+  name = "tarea_2_3_filtrar_logs"
+  description = "Proyecto 2 - Log File Management"
+  version = "1.0.0"
+  target-dir = ""
+  src-dir = ""
+  output-type = "executable"
+  compile-option = ""
+  override-compile-option = ""
+  link-option = ""
+  package-configuration = {}
+
+[dependencies]
+
+[test-dependencies]

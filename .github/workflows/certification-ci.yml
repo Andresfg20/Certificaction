@@ -38,12 +38,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        proyecto:
-          - proyecto-1/cjpmDemo
-          - proyecto-1/cangjie
-          - proyecto-2
-          - proyecto-3
-          - proyecto-4
+        include:
+          - proyecto: proyecto-1/cjpmDemo
+            entrada: ""
+          - proyecto: proyecto-1/cangjie
+            entrada: ""
+          - proyecto: proyecto-2/tarea-2-1-consola
+            entrada: 'Corhuila\n12\n35.5\nyes\n'
+          - proyecto: proyecto-2/tarea-2-2-guardar-logs
+            entrada: '1\n2\n3\n4\n5\n'
+          - proyecto: proyecto-2/tarea-2-3-filtrar-logs
+            entrada: '3\n5\n6\n'
+          - proyecto: proyecto-3
+            entrada: ""
+          - proyecto: proyecto-4
+            entrada: ""
     defaults:
       run:
         working-directory: certification/codigo/${{ matrix.proyecto }}
@@ -74,8 +83,8 @@ jobs:
 
       - name: Build
         run: cjpm build
-      - name: Run
-        run: cjpm run
+      - name: Run (con entrada simulada para los programas interactivos)
+        run: printf '${{ matrix.entrada }}' | cjpm run
       - name: Test
         run: cjpm test
 
