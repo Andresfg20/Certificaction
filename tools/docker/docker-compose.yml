@@ -1,0 +1,12 @@
+# Uso (desde la raíz del repo):
+#   docker compose -f tools/docker/docker-compose.yml up --build
+services:
+  cangjie:
+    build:
+      context: ../..
+      dockerfile: tools/docker/Dockerfile
+    working_dir: /workspace
+    volumes:
+      - ../../certification:/workspace/certification
+      - ../../scripts:/workspace/scripts:ro
+    command: ["bash", "scripts/probar-todo.sh"]

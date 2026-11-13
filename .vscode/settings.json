@@ -1,0 +1,10 @@
+{
+  "files.eol": "\n",
+  "files.encoding": "utf8",
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+  "files.exclude": {
+    "**/target": true,
+    "**/.DS_Store": true
+  }
+}

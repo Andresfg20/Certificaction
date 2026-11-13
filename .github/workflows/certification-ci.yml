@@ -1,0 +1,106 @@
+name: Certificación Cangjie CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "certification/**"
+      - "scripts/**"
+      - ".github/workflows/certification-ci.yml"
+  pull_request:
+    paths:
+      - "certification/**"
+  workflow_dispatch:
+    inputs:
+      strict:
+        description: "Exigir evidencias y certificado (entrega final)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  estructura:
+    name: Validar estructura
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validar certification/
+        env:
+          STRICT: ${{ inputs.strict && '1' || '0' }}
+        run: bash scripts/validar-certificacion.sh
+
+  compilar:
+    name: Build, run y test · ${{ matrix.proyecto }}
+    needs: estructura
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        proyecto:
+          - proyecto-1/cjpmDemo
+          - proyecto-1/cangjie
+          - proyecto-2
+          - proyecto-3
+          - proyecto-4
+    defaults:
+      run:
+        working-directory: certification/codigo/${{ matrix.proyecto }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # SDK 1.2.1 (STS), la misma versión validada localmente; si falla, usa la última LTS.
+      - name: Instalar Cangjie SDK (STS)
+        id: sts
+        continue-on-error: true
+        uses: Zxilly/setup-cangjie@v3
+        with:
+          channel: sts
+          version: 1.2.1
+      - name: Instalar Cangjie SDK (LTS, respaldo)
+        if: steps.sts.outcome == 'failure'
+        uses: Zxilly/setup-cangjie@v3
+        with:
+          channel: lts
+          version: latest
+
+      - name: Alinear cjc-version con el SDK instalado (solo en CI)
+        run: |
+          cjc -v
+          CJV="$(cjc -v | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)"
+          sed -i "s/cjc-version = \".*\"/cjc-version = \"${CJV}\"/" cjpm.toml
+          grep cjc-version cjpm.toml
+
+      - name: Build
+        run: cjpm build
+      - name: Run
+        run: cjpm run
+      - name: Test
+        run: cjpm test
+
+  hola-cjc:
+    name: Compilar con cjc · proyecto-1/hola-cjc
+    needs: estructura
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instalar Cangjie SDK (STS)
+        id: sts
+        continue-on-error: true
+        uses: Zxilly/setup-cangjie@v3
+        with:
+          channel: sts
+          version: 1.2.1
+      - name: Instalar Cangjie SDK (LTS, respaldo)
+        if: steps.sts.outcome == 'failure'
+        uses: Zxilly/setup-cangjie@v3
+        with:
+          channel: lts
+          version: latest
+      - name: Compilar y ejecutar
+        working-directory: certification/codigo/proyecto-1/hola-cjc
+        run: |
+          cjc main.cj -o hola
+          ./hola | tee salida.txt
+          grep -q "Hello Cangjie" salida.txt

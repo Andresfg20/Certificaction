@@ -1,0 +1,44 @@
+# ---- Cangjie / cjpm ----
+target/
+**/target/
+*.cjo
+*.bc
+*.o
+*.obj
+*.ll
+cjpm.lock.bak
+.cache/
+
+# Binarios compilados con cjc
+certification/codigo/proyecto-1/hola-cjc/hola
+certification/codigo/proyecto-1/hola-cjc/main
+*.exe
+*.out
+*.dll
+*.so
+*.dylib
+
+# SDK descargado localmente (para Docker)
+.sdk/
+cangjie-sdk-*.tar.gz
+cangjie-sdk-*.zip
+
+# ---- Sistema operativo ----
+.DS_Store
+__MACOSX/
+._*
+Thumbs.db
+desktop.ini
+
+# ---- Editores ----
+.idea/
+*.swp
+*~
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# ---- Variables de entorno ----
+.env
+.env.*
+!.env.example

@@ -1,0 +1,16 @@
+[package]
+  cjc-version = "1.2.0"
+  name = "cangjie"
+  description = "Resumen sobre IDE y compiladores"
+  version = "1.0.0"
+  target-dir = ""
+  src-dir = ""
+  output-type = "executable"
+  compile-option = ""
+  override-compile-option = ""
+  link-option = ""
+  package-configuration = {}
+
+[dependencies]
+
+[test-dependencies]

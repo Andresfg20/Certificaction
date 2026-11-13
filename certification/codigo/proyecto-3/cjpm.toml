@@ -1,0 +1,16 @@
+[package]
+  cjc-version = "1.2.0"
+  name = "data_analysis"
+  description = "Proyecto 3 - System Data Analysis: estadísticas y anomalías de CPU y memoria"
+  version = "1.0.0"
+  target-dir = ""
+  src-dir = ""
+  output-type = "executable"
+  compile-option = ""
+  override-compile-option = ""
+  link-option = ""
+  package-configuration = {}
+
+[dependencies]
+
+[test-dependencies]
