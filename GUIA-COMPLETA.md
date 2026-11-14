@@ -11,12 +11,12 @@ Repositorio de evidencias de la certificación **Cangjie Programming** (Huawei T
 | 1 · Setting Up The Work Environment | `hola-cjc`, `cjpmDemo`, `cangjie` | Tu código original (cjc vs cjpm) + prueba unitaria añadida a `cjpmDemo`. |
 | 2 · Log File Management | `tarea_2_1_consola`, `tarea_2_2_guardar_logs`, `tarea_2_3_filtrar_logs` | **Tu código del curso**: log por consola, guardado en `log.txt` con `try` con recursos, filtrado por nivel con sobrecarga y lambda final. |
 | 3 · System Data Analysis | `tarea_3_1_validacion`, `tarea_3_2_gestion_dispositivos`, `tarea_3_3_analisis_csv`, `tarea_3_4_funcional` | **Tu código del curso**: `enum` + `match`, `Option`, CRUD con `ArrayList`/`HashSet`, análisis del CSV de ventas y *pipeline* funcional con `\|>`. |
-| 4 · Business Function Optimization | `business_opt` | Strategy para descuentos, O(n²)→O(n) con HashSet, HashMap, memoización. |
+| 4 · Business Function Optimization | `task4_1`, `task4_2`, `task4_3` | **Tu código del curso**: clases con `prop`, singleton, herencia, interfaces, polimorfismo, genéricos con restricciones y FFI a C. |
 
 **Supuestos tomados**
 1. Lenguaje: **Cangjie** (SDK 1.2.1 instalado y validado en tu equipo) (detectado por `cjpm.toml`, `.cj` y la captura de Huawei Talent). Versión `cjc-version = "1.2.0"`, la de tu `cjpm.toml`.
-2. Los proyectos 2 y 3 son tu código real del curso (13-nov-2026). El proyecto 4 aún no lo has hecho en la plataforma: su código es una **implementación de referencia** basada en el título de cada proyecto. Cuando completes cada proyecto en Huawei Talent, compara con las tareas reales y ajusta o reemplaza.
-3. **No se inventan** evidencias ni certificado: `01-proyecto-1.png` ya está; las demás capturas y `certificado.pdf` deben salir de tu cuenta real.
+2. Los proyectos 1–4 son tu código real del curso (terminado el 13-nov-2026). Solo se corrigió lo necesario para compilar con el SDK 1.2.1; cada README de proyecto lista los ajustes.
+3. Evidencias y `certificado.pdf` salen de tu cuenta de Huawei Talent (código de certificado `ICT20261114000013`).
 4. Archivos de otros ecosistemas (`package.json`, `requirements.txt`, `pom.xml`, `build.gradle`, `.env.example`) **no aplican**: Cangjie usa `cjpm.toml` y no hay secretos ni variables de configuración. Crearlos sería ruido y confundiría al evaluador.
 5. Docker es opcional y está en `tools/docker/` para no ensuciar la raíz del repositorio semanal.
 
@@ -56,19 +56,19 @@ Repositorio de evidencias de la certificación **Cangjie Programming** (Huawei T
 │   └── docker-compose.yml
 └── certification/
     ├── README.md
-    ├── certificado.pdf               (pendiente: descárgalo de Huawei Talent)
+    ├── certificado.pdf               (incluido)
     ├── evidencias/
     │   ├── 00-ficha-del-curso.png    (incluido)
     │   ├── 01-proyecto-1.png         (incluido)
     │   ├── 02-proyecto-2.png         (incluido)
     │   ├── 03-proyecto-3.png         (incluido)
-    │   ├── 04-proyecto-4.png         (pendiente)
-    │   └── 05-examen-final.png       (pendiente)
+    │   ├── 04-proyecto-4.png         (incluido)
+    │   └── 05-examen-final.png       (incluido)
     └── codigo/
         ├── proyecto-1/ (README.md, hola-cjc/main.cj, cjpmDemo/, cangjie/)
         ├── proyecto-2/ (README.md, tarea-2-1-consola/, tarea-2-2-guardar-logs/, tarea-2-3-filtrar-logs/ + log.txt)
         ├── proyecto-3/ (README.md, tarea-3-1-validacion/, tarea-3-2-gestion-dispositivos/, tarea-3-3-analisis-csv/ + CSV, tarea-3-4-funcional/ + CSV)
-        └── proyecto-4/ (README.md, cjpm.toml, src/{descuentos,pedidos,optimizacion,main,negocio_test}.cj)
+        └── proyecto-4/ (README.md, tarea-4-1-aire-acondicionado/, tarea-4-2-dispositivos/, tarea-4-3-habitaciones/; cada una con ffi/program.c)
 ```
 
 > Si ya tienes un `.gitignore` o `.gitattributes` en la raíz, **combina** el contenido en vez de reemplazarlo.
@@ -265,8 +265,14 @@ jobs:
             entrada: '1\n2\n3\n4\n'
           - proyecto: proyecto-3/tarea-3-4-funcional
             entrada: '1\n2\n3\n4\n'
-          - proyecto: proyecto-4
-            entrada: ""
+          - proyecto: proyecto-4/tarea-4-1-aire-acondicionado
+            entrada: '1\n1\n3\n30\n\n3\n22\n4\n5\n2\n10003\nOffice AC\n\n3\n3\n\n4\n'
+          - proyecto: proyecto-4/tarea-4-2-dispositivos
+            entrada: '1\n2\n3\n2\n2\n4\n3\n2\n\n3\n4\n'
+          - proyecto: proyecto-4/tarea-4-3-habitaciones
+            entrada: '1\n2\n3\n22\n4\n5\n4\n3\n5\n3\n'
+    env:
+      TERM: dumb
     defaults:
       run:
         working-directory: certification/codigo/${{ matrix.proyecto }}
@@ -294,6 +300,10 @@ jobs:
           CJV="$(cjc -v | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)"
           sed -i "s/cjc-version = \".*\"/cjc-version = \"${CJV}\"/" cjpm.toml
           grep cjc-version cjpm.toml
+
+      - name: Compilar código C para FFI (proyecto 4)
+        run: |
+          if [ -f ffi/program.c ]; then cc -c ffi/program.c -o ffi/program.o; fi
 
       - name: Build
         run: cjpm build
@@ -354,7 +364,7 @@ echo "== Proyectos de código =="
 for p in proyecto-1 proyecto-2 proyecto-3 proyecto-4; do
   if [ -d "$C/codigo/$p" ] && [ -n "$(ls -A "$C/codigo/$p" 2>/dev/null)" ]; then ok "codigo/$p"; else falta "codigo/$p (con contenido)"; fi
 done
-for t in proyecto-1/cjpmDemo proyecto-1/cangjie proyecto-2/tarea-2-1-consola proyecto-2/tarea-2-2-guardar-logs proyecto-2/tarea-2-3-filtrar-logs proyecto-3/tarea-3-1-validacion proyecto-3/tarea-3-2-gestion-dispositivos proyecto-3/tarea-3-3-analisis-csv proyecto-3/tarea-3-4-funcional proyecto-4; do
+for t in proyecto-1/cjpmDemo proyecto-1/cangjie proyecto-2/tarea-2-1-consola proyecto-2/tarea-2-2-guardar-logs proyecto-2/tarea-2-3-filtrar-logs proyecto-3/tarea-3-1-validacion proyecto-3/tarea-3-2-gestion-dispositivos proyecto-3/tarea-3-3-analisis-csv proyecto-3/tarea-3-4-funcional proyecto-4/tarea-4-1-aire-acondicionado proyecto-4/tarea-4-2-dispositivos proyecto-4/tarea-4-3-habitaciones; do
   [ -f "$C/codigo/$t/cjpm.toml" ] && ok "codigo/$t/cjpm.toml" || falta "codigo/$t/cjpm.toml"
   [ -f "$C/codigo/$t/src/main.cj" ] && ok "codigo/$t/src/main.cj" || falta "codigo/$t/src/main.cj"
 done
@@ -389,6 +399,7 @@ COD="$RAIZ/certification/codigo"
 command -v cjc  >/dev/null || { echo "cjc no está en el PATH. Ejecuta: source <ruta>/cangjie/envsetup.sh"; exit 1; }
 command -v cjpm >/dev/null || { echo "cjpm no está en el PATH."; exit 1; }
 cjc -v
+export TERM="${TERM:-dumb}"
 
 echo "==> proyecto-1/hola-cjc (cjc)"
 ( cd "$COD/proyecto-1/hola-cjc" && cjc main.cj -o hola && ./hola && rm -f hola )
@@ -404,12 +415,14 @@ PROYECTOS=(
   "proyecto-3/tarea-3-2-gestion-dispositivos|2\n1001\nHaidian\n2\n1002\nXicheng\n1\n4\n1002\nChaoyang\n5\nChaoyang\n3\n1001\n1\n6\n"
   "proyecto-3/tarea-3-3-analisis-csv|1\n2\n3\n4\n"
   "proyecto-3/tarea-3-4-funcional|1\n2\n3\n4\n"
-  "proyecto-4|"
+  "proyecto-4/tarea-4-1-aire-acondicionado|1\n1\n3\n30\n\n3\n22\n4\n5\n2\n10003\nOffice AC\n\n3\n3\n\n4\n"
+  "proyecto-4/tarea-4-2-dispositivos|1\n2\n3\n2\n2\n4\n3\n2\n\n3\n4\n"
+  "proyecto-4/tarea-4-3-habitaciones|1\n2\n3\n22\n4\n5\n4\n3\n5\n3\n"
 )
 for item in "${PROYECTOS[@]}"; do
   p="${item%%|*}"; entrada="${item#*|}"
   echo "==> $p"
-  ( cd "$COD/$p" && cjpm build && printf "$entrada" | timeout 120 cjpm run && cjpm test )
+  ( cd "$COD/$p" && { [ ! -f ffi/program.c ] || cc -c ffi/program.c -o ffi/program.o; } && cjpm build && printf "$entrada" | timeout 120 cjpm run && cjpm test )
 done
 echo "Todos los proyectos compilaron, ejecutaron y pasaron sus pruebas."
 ```
@@ -454,12 +467,22 @@ $Proyectos = [ordered]@{
     "proyecto-3\tarea-3-2-gestion-dispositivos" = "2`n1001`nHaidian`n2`n1002`nXicheng`n1`n4`n1002`nChaoyang`n5`nChaoyang`n3`n1001`n1`n6"
     "proyecto-3\tarea-3-3-analisis-csv" = "1`n2`n3`n4"
     "proyecto-3\tarea-3-4-funcional" = "1`n2`n3`n4"
-    "proyecto-4"                         = ""
+    "proyecto-4\tarea-4-1-aire-acondicionado" = "1`n1`n3`n30`n`n3`n22`n4`n5`n2`n10003`nOffice AC`n`n3`n3`n`n4"
+    "proyecto-4\tarea-4-2-dispositivos" = "1`n2`n3`n2`n2`n4`n3`n2`n`n3`n4"
+    "proyecto-4\tarea-4-3-habitaciones" = "1`n2`n3`n22`n4`n5`n4`n3`n5`n3"
 }
 foreach ($p in $Proyectos.Keys) {
     Write-Host "==> $p"
     Push-Location (Join-Path $Cod $p)
     try {
+        if (Test-Path "ffi\program.c") {
+            $cc = @("clang", "gcc") | Where-Object { Get-Command $_ -ErrorAction SilentlyContinue } | Select-Object -First 1
+            if (-not $cc) {
+                Write-Warning "Se omite $p: necesita un compilador de C (clang o gcc) para ffi\program.c"
+                continue
+            }
+            Invoke-Paso "$cc -c ffi\program.c -o ffi\program.o"
+        }
         Invoke-Paso "cjpm build"
         $entrada = $Proyectos[$p]
         $entrada | cjpm run
@@ -558,9 +581,9 @@ bash scripts/probar-todo.sh             # build + run + test (requiere Cangjie S
 | Enlace | https://e.huawei.com/en/talent/ict-academy/#/ict-courses-detail?courseId=fvXQlvE-whPqVon6TmjmbXFGBmk |
 | Duración publicada | 56 horas |
 | Fecha de inicio | 10 de noviembre de 2026 |
-| Fecha de finalización | *(pendiente)* |
-| Nota del examen final | *(pendiente)* |
-| Certificado | [certificado.pdf](certificado.pdf) |
+| Fecha de finalización | 13 de noviembre de 2026 |
+| Nota del examen final | 70 puntos - 10/15 |
+| Certificado | [certificado.pdf](certificado.pdf) · código `ICT20261114000013` · emitido el 14 de noviembre de 2026 |
 | Ficha del curso | [00-ficha-del-curso.png](evidencias/00-ficha-del-curso.png) |
 
 ## Desarrollo del curso
@@ -570,8 +593,8 @@ bash scripts/probar-todo.sh             # build + run + test (requiere Cangjie S
 | 1. Setting Up The Work Environment | 11 de noviembre de 2026 | Aprendí que el SDK de Cangjie es el paquete con el compilador, las librerías y las herramientas necesarias para programar en el lenguaje, y que hay que configurarlo con las variables de entorno para que el sistema lo reconozca. Entendí la diferencia entre `cjc`, que compila un archivo suelto, y `cjpm`, que crea y gestiona proyectos completos con su archivo `cjpm.toml`. Vi qué hace un IDE (editar, compilar, depurar y organizar todo en un solo lugar) y cómo la relación entre lenguaje y compilador hace que los dos evolucionen juntos. Hice el entorno en macOS, que al ser un sistema Unix funciona casi igual que Linux. | [01-proyecto-1.png](evidencias/01-proyecto-1.png) | [codigo/proyecto-1](codigo/proyecto-1/) |
 | 2. Log File Management | 13 de noviembre de 2026 | Aprendí los tipos de datos básicos de Cangjie (enteros, decimales, booleanos y cadenas) y que hay que convertir los tipos explícitamente porque el lenguaje no mezcla tipos distintos en una operación. Practiqué leer datos de la consola y escribir logs en un archivo, usando `try` con recursos para que el archivo se cierre solo y `catch` para manejar errores como una entrada inválida. Usé `if`, `while` y `for-in` para armar menús que se repiten hasta que el usuario elige salir. Vi cómo definir funciones, sobrecargarlas (mismo nombre, distintos parámetros) y pasarles una lambda como último argumento para filtrar los logs por nivel. | [02-proyecto-2.png](evidencias/02-proyecto-2.png) | [codigo/proyecto-2](codigo/proyecto-2/) |
 | 3. System Data Analysis | 13 de noviembre de 2026 | Aprendí a usar `enum` para limitar los valores posibles (como los distritos válidos) y `match` para cubrir todos los casos, algo más seguro que un `switch`. Entendí que `Option` (`?Int64`) reemplaza al `null` y obliga a decidir qué hacer cuando no hay valor, con `match`, `if-let` o `??`. Practiqué las colecciones (`Array`, `ArrayList`, `HashSet`, `HashMap`) y las tuplas para administrar una lista de dispositivos sin IDs repetidos. Leí un archivo CSV línea por línea, limpié los pagos fallidos y agrupé las ventas por región, producto y mes. Por último usé funciones de orden superior y el operador `\|>` para encadenar los pasos del análisis. | [03-proyecto-3.png](evidencias/03-proyecto-3.png) | [codigo/proyecto-3](codigo/proyecto-3/) |
-| 4. Business Function Optimization | *(pendiente)* | *(pendiente)* | [04-proyecto-4.png](evidencias/04-proyecto-4.png) | [codigo/proyecto-4](codigo/proyecto-4/) |
-| Examen final | *(pendiente)* | *(pendiente)* | [05-examen-final.png](evidencias/05-examen-final.png) | — |
+| 4. Business Function Optimization | 13 de noviembre de 2026, 8:09 p. m. | Aprendí a modelar entidades con clases: propiedades con validación (`prop`), constructores, miembros estáticos y el patrón singleton para tener un único administrador de dispositivos. Practiqué la herencia (`open`, `override`, `redef`), las clases abstractas y las interfaces, y vi que una clase solo hereda de una pero puede implementar varias interfaces. Con el polimorfismo, una habitación llama a `operate()` o `open()` sin saber de qué tipo es cada dispositivo. Usé genéricos con restricciones (`where T <: Parsable<T>`) para validar entradas, y llamé funciones en C con `foreign` y `unsafe` para limpiar la consola. | [04-proyecto-4.png](evidencias/04-proyecto-4.png) | [codigo/proyecto-4](codigo/proyecto-4/) |
+| Examen final | 13 de noviembre de 2026, 8:46 p. m. | Repasé los cuatro proyectos para el examen: tipos de datos y flujo de control, manejo de excepciones, `enum` y `Option` con `match`, colecciones y programación funcional, y orientación a objetos con herencia, interfaces, genéricos y polimorfismo. Con esto reforcé sobre todo las diferencias de Cangjie frente a otros lenguajes, como la conversión explícita de tipos y la ausencia de `null`. | [05-examen-final.png](evidencias/05-examen-final.png) | No aplica (el examen no lleva código) |
 
 ## Estructura
 
@@ -590,13 +613,14 @@ certification/
     ├── proyecto-1/   # hola-cjc (cjc), cjpmDemo y cangjie (cjpm)
     ├── proyecto-2/   # tareas 2.1 consola, 2.2 guardar logs, 2.3 filtrar logs
     ├── proyecto-3/   # tareas 3.1 validación, 3.2 dispositivos, 3.3 CSV, 3.4 funcional
-    └── proyecto-4/   # business_opt: Strategy, HashSet/HashMap, memoización
+    └── proyecto-4/   # tareas 4.1 aire acondicionado, 4.2 dispositivos, 4.3 habitaciones (con FFI a C)
 ```
 
 ## Tecnologías
 
 - **Lenguaje:** Cangjie (Huawei), SDK 1.x
 - **Herramientas:** `cjc` (compilador), `cjpm` (gestor de proyectos y pruebas), `std.unittest`
+- **Interoperabilidad:** funciones en C (`foreign` / `unsafe`) en el proyecto 4, compiladas con `gcc` o `clang`
 - **IDE:** VS Code con la extensión de Cangjie, o DevEco Studio con DevEco-Cangjie-Plugin
 - **CI:** GitHub Actions (valida la estructura, compila, ejecuta y prueba cada proyecto)
 
@@ -609,7 +633,7 @@ Requisito: Cangjie SDK instalado y `cjc -v` respondiendo en la terminal.
 bash scripts/probar-todo.sh
 
 # Un proyecto concreto
-cd certification/codigo/proyecto-4
+cd certification/codigo/proyecto-1/cjpmDemo
 cjpm build && cjpm run && cjpm test
 ```
 
@@ -617,12 +641,7 @@ En Windows con PowerShell: `powershell -ExecutionPolicy Bypass -File scripts/pro
 
 ## Relación con la asignatura
 
-*(Borrador para personalizar)* Cangjie es el lenguaje de Huawei para el desarrollo de aplicaciones nativas
-de HarmonyOS, un sistema operativo móvil. El curso conecta con Programación Móvil en tres frentes:
-la preparación del entorno (SDK, IDE, emulador de dispositivo en DevEco Studio), las prácticas de
-ingeniería que toda app móvil necesita (registro y análisis de logs, monitoreo de CPU y memoria,
-que en un móvil impactan batería y fluidez) y la optimización de la lógica de negocio, donde
-elegir la estructura de datos correcta reduce el trabajo del procesador en dispositivos con recursos limitados.
+En el proyecto de aula usamos Kotlin, y Cangjie se siente bastante familiar. Ambos son de tipado estático con inferencia y separan `let`/`var` como `val`/`var`. En tipos, Cangjie no hace conversiones automáticas entre `Int16` e `Int64`, algo parecido a lo estricto de Kotlin, y `Option` (`?Int64`) cumple el mismo papel que los tipos anulables (`Int?`) al obligar a manejar la ausencia de valor con `match`, `if-let` o `??`. En clases, las ideas son casi las mismas (`open`, `abstract`, interfaces, constructor principal), aunque la sintaxis cambia (`<:` en vez de `:`) y el `match` de Cangjie se parece al `when` de Kotlin. En excepciones, ambos usan `try/catch/finally`, y el `try` con recursos de Cangjie equivale al `use` de Kotlin. Para una app móvil aprovecharía el manejo seguro de valores ausentes, el `match` exhaustivo y la posibilidad de crear aplicaciones nativas de HarmonyOS, además de la interoperabilidad con C para usar librerías del sistema.
 ````
 
 ## `certification/codigo/proyecto-1/README.md`
@@ -1712,45 +1731,54 @@ main(): Int64 {
 ````markdown
 # Proyecto 4 · Business Function Optimization
 
-Refactorización y optimización de lógica de negocio de pedidos:
+Código desarrollado en las tareas del curso: software de gestión de dispositivos de hogar inteligente, que evoluciona de una sola clase a un modelo orientado a objetos completo. Cada tarea es un proyecto `cjpm` independiente que llama a funciones en C (`ffi/program.c`) para limpiar la consola.
 
-| Optimización | Antes | Después |
-|---|---|---|
-| Reglas de descuento | `if/else` acoplado | Patrón **Strategy** con `interface PoliticaDescuento` |
-| Detección de pedidos duplicados | O(n²) con doble ciclo | O(n) con `HashSet` |
-| Consulta de precios | Búsqueda lineal O(n) | Índice `HashMap` O(1) |
-| Proyección de ventas | Recursión exponencial | Iteración O(n) |
+| Tarea | Carpeta | Qué hace | Conceptos |
+|---|---|---|---|
+| 4.1 Aire acondicionado | `tarea-4-1-aire-acondicionado/` | Gestión de aires acondicionados: encender, conectar, temperatura (16–28 °C), velocidad del ventilador; agregar y eliminar equipos. | `class`, `prop` con validación en `set`, `static prop`, `enum` con `match`, singleton (`private init` + `static let`), `foreign` / `unsafe`. |
+| 4.2 Dispositivos | `tarea-4-2-dispositivos/` | Sensor de temperatura y humedad, purificador de aire y báscula de grasa corporal con sus paneles de control. | Herencia (`open`, `override`), interfaces (`Openable`, monitoreo), paquetes (`task4_2.model`). |
+| 4.3 Habitaciones | `tarea-4-3-habitaciones/` | Habitaciones con varios dispositivos: encender, conectar o apagar todos, y operar cada uno desde su propio panel. | Polimorfismo (`operate()` según el tipo real), una clase + varias interfaces, genéricos con restricciones (`where T <: Parsable<T> & Comparable<T>`). |
 
-Cada versión devuelve también el número de operaciones, de modo que la mejora se mide
-de forma determinista (independiente de la velocidad del equipo) y se verifica en las pruebas.
+## Compilar y ejecutar
 
-| Archivo | Responsabilidad |
-|---|---|
-| `src/descuentos.cj` | Interfaz y políticas de descuento. |
-| `src/pedidos.cj` | `LineaPedido`, `Pedido`, `mejorPolitica()`. |
-| `src/optimizacion.cj` | Comparativas ingenuo vs optimizado. |
-| `src/main.cj` | Demostración con métricas. |
-| `src/negocio_test.cj` | Pruebas unitarias. |
+Cada tarea enlaza el objeto C `ffi/program.o` (`compile-option` en `cjpm.toml`). Hay que generarlo antes del primer build:
 
 ```bash
-cjpm build
-cjpm run
-cjpm test
+cd tarea-4-1-aire-acondicionado
+cc -c ffi/program.c -o ffi/program.o   # gcc o clang
+cjpm build && cjpm run
 ```
+
+En Windows se necesita un compilador de C (por ejemplo `clang` de LLVM o `gcc` de MSYS2/MinGW). El SDK de Cangjie para Windows no lo incluye.
+
+Ejecución no interactiva (la usa el CI):
+
+```bash
+printf '1\n1\n3\n30\n\n3\n22\n4\n5\n2\n10003\nOffice AC\n\n3\n3\n\n4\n' | cjpm run   # 4.1
+printf '1\n2\n3\n2\n2\n4\n3\n2\n\n3\n4\n' | cjpm run                                # 4.2
+printf '1\n2\n3\n22\n4\n5\n4\n3\n5\n3\n' | cjpm run                                 # 4.3
+```
+
+## Ajustes hechos para el SDK 1.2.1
+
+- Tarea 4.1: faltaba la línea `package task4_1`.
+- Tarea 4.1: error `The type of this catch block is 'Option<String>'...` en `askTemperature`. El `catch` terminaba en `getStdIn().readln()` (que devuelve `Option<String>`) y el `try` es `Unit`; se cambió por `let _ = getStdIn().readln()`.
+- Tareas 4.2 y 4.3: error `undeclared identifier 'format'` en `main.cj`. `Float64.format()` es una extensión de `std.convert`, y ese archivo no la importaba; se agregó `import std.convert.*`.
+- `ffi/program.o` es un archivo generado: lo excluye `.gitignore` y lo compilan el CI y los scripts.
 ````
 
-## `certification/codigo/proyecto-4/cjpm.toml`
+## `certification/codigo/proyecto-4/tarea-4-1-aire-acondicionado/cjpm.toml`
 
 ```toml
 [package]
   cjc-version = "1.2.0"
-  name = "business_opt"
-  description = "Proyecto 4 - Business Function Optimization: refactorización y optimización de lógica de pedidos"
+  name = "task4_1"
+  description = "Proyecto 4 - Business Function Optimization"
   version = "1.0.0"
   target-dir = ""
   src-dir = ""
   output-type = "executable"
-  compile-option = ""
+  compile-option = "./ffi/program.o"
   override-compile-option = ""
   link-option = ""
   package-configuration = {}
@@ -1760,369 +1788,1317 @@ cjpm test
 [test-dependencies]
 ```
 
-## `certification/codigo/proyecto-4/src/descuentos.cj`
+## `certification/codigo/proyecto-4/tarea-4-1-aire-acondicionado/ffi/program.c`
 
-```swift
-package business_opt
+```c
+#include <stdlib.h>
 
-// Patrón Strategy: cada política de descuento es intercambiable.
-// Antes de optimizar, la lógica estaba en un único if/else gigante;
-// con interfaces se puede agregar una política nueva sin tocar las existentes.
-// Montos en pesos (Int64) para evitar errores de redondeo de Float64.
-
-public interface PoliticaDescuento {
-    func nombre(): String
-    func aplicar(subtotal: Int64): Int64
+void chcp65001() {
+#ifdef _WIN32
+    system("chcp 65001");
+#endif
 }
 
-public class SinDescuento <: PoliticaDescuento {
-    public func nombre(): String {
-        return "Sin descuento"
-    }
-
-    public func aplicar(subtotal: Int64): Int64 {
-        return subtotal
-    }
-}
-
-public class DescuentoPorcentaje <: PoliticaDescuento {
-    private let porcentaje: Int64
-
-    public init(porcentaje: Int64) {
-        if (porcentaje < 0 || porcentaje > 100) {
-            throw IllegalArgumentException("Porcentaje fuera de rango: ${porcentaje}")
-        }
-        this.porcentaje = porcentaje
-    }
-
-    public func nombre(): String {
-        return "${porcentaje} % de descuento"
-    }
-
-    public func aplicar(subtotal: Int64): Int64 {
-        return subtotal - subtotal * porcentaje / 100
-    }
-}
-
-// 10 % solo si el subtotal alcanza el mínimo.
-public class DescuentoPorVolumen <: PoliticaDescuento {
-    private let minimo: Int64
-
-    public init(minimo: Int64) {
-        this.minimo = minimo
-    }
-
-    public func nombre(): String {
-        return "10 % por compras desde ${minimo}"
-    }
-
-    public func aplicar(subtotal: Int64): Int64 {
-        if (subtotal >= minimo) {
-            return subtotal - subtotal / 10
-        }
-        return subtotal
-    }
+void clearScreen() {
+#ifdef _WIN32
+    system("cls");
+#else
+    system("clear");
+#endif
 }
 ```
 
-## `certification/codigo/proyecto-4/src/main.cj`
+## `certification/codigo/proyecto-4/tarea-4-1-aire-acondicionado/src/main.cj`
 
 ```swift
-package business_opt
+package task4_1
 
-// Proyecto 4 · Business Function Optimization
+import std.collection.*
+import std.env.*
+import std.convert.*
+import std.random.*
+
+// Funciones en C (interoperabilidad)
+foreign func clearScreen(): Unit
+foreign func chcp65001(): Unit
+
+enum FanSpeed {
+    | LOW
+    | MIDDLE
+    | HIGH
+
+    func toString(): String {
+        match (this) {
+            case LOW => "Low Speed"
+            case MIDDLE => "Medium Speed"
+            case HIGH => "High Speed"
+        }
+    }
+}
+
+class AirConditionerDevice {
+    static prop deviceType: String {
+        get() { "AIR_CONDITIONER_DEVICE" }
+    }
+
+    private var _deviceId: Int64
+    mut prop deviceId: Int64 {
+        get() { _deviceId }
+        set(id) {
+            if (id <= 0) {
+                throw Exception("Device ID must be positive.")
+            }
+            _deviceId = id
+        }
+    }
+
+    var deviceName: String
+    var isOnline: Bool = false
+    var isOpened: Bool = false
+    var temperature: Float64 = 0.0
+    var humidity: Float64 = 0.0
+    var fanSpeed: FanSpeed = FanSpeed.MIDDLE
+
+    private var _targetTemperature: Int64 = 25
+    mut prop targetTemperature: Int64 {
+        get() { _targetTemperature }
+        set(value) {
+            if (value < 16) {
+                throw Exception("Temperature cannot be lower than 16°C.")
+            }
+            if (value > 28) {
+                throw Exception("Temperature cannot be higher than 28°C.")
+            }
+            _targetTemperature = value
+        }
+    }
+
+    init(deviceId: Int64, deviceName: String) {
+        if (deviceId <= 0) {
+            throw Exception("Device ID must be positive.")
+        }
+        this._deviceId = deviceId
+        this.deviceName = deviceName
+    }
+
+    // Un equipo apagado no se puede conectar
+    func connect() {
+        if (!isOpened) {
+            return
+        }
+        isOnline = true
+    }
+
+    func disconnect() {
+        isOnline = false
+    }
+
+    func update() {
+        if (isOpened) {
+            temperature = Random().nextGaussianFloat64(mean: 28.0, sigma: 1.0)
+            humidity = Random().nextGaussianFloat64(mean: 50.0, sigma: 15.0)
+        }
+    }
+
+    func open() {
+        isOpened = true
+        update()
+    }
+
+    // Al apagar: se desconecta y se reinician los datos
+    func close() {
+        isOpened = false
+        isOnline = false
+        temperature = 0.0
+        humidity = 0.0
+    }
+
+    func togglePower() {
+        if (isOpened) {
+            close()
+        } else {
+            open()
+        }
+    }
+
+    func toggleFanSpeed() {
+        fanSpeed = match (fanSpeed) {
+            case FanSpeed.LOW => FanSpeed.MIDDLE
+            case FanSpeed.MIDDLE => FanSpeed.HIGH
+            case FanSpeed.HIGH => FanSpeed.LOW
+        }
+    }
+
+    func displayStatus() {
+        update()
+        let state = if (isOpened) {
+            "On ${temperature.format(".1")}°C ${humidity.format(".0")}%"
+        } else {
+            "Off"
+        }
+        println("---------- ${deviceId} ${deviceName} ----------")
+        println("Connection status: ${isOnline}")
+        println("Current status: ${state}")
+        println("Target temperature: ${targetTemperature}°C")
+        println("Fan speed mode: ${fanSpeed.toString()}")
+    }
+
+    func askTemperature() {
+        print("Please enter temperature (16~28): ")
+        let text = getStdIn().readln() ?? ""
+        try {
+            this.targetTemperature = Int64.parse(text)
+        } catch (e: Exception) {
+            // Falla si no es número o si está fuera de rango
+            println("${e}")
+            println("Press Enter to continue")
+            // Se descarta el valor leído: el catch debe ser Unit como el bloque try
+            let _ = getStdIn().readln()
+        }
+    }
+
+    func operateByConsole() {
+        while (true) {
+            unsafe { clearScreen() }
+            displayStatus()
+            if (isOpened && isOnline) {
+                println("Operation: [1] Connect [2] Power [3] Temperature [4] Fan Speed [5] Exit")
+                let order = getStdIn().readln() ?? ""
+                match (order) {
+                    case "1" => if (isOnline) { disconnect() } else { connect() }
+                    case "2" => togglePower()
+                    case "3" => askTemperature()
+                    case "4" => toggleFanSpeed()
+                    case "5" => break
+                    case _ => println("Command input error, please re-enter!")
+                }
+            } else {
+                println("Operation: [1] Connect [2] Power [3] Exit")
+                let order = getStdIn().readln() ?? ""
+                match (order) {
+                    case "1" => if (isOnline) { disconnect() } else { connect() }
+                    case "2" => togglePower()
+                    case "3" => break
+                    case _ => println("Command input error, please re-enter!")
+                }
+            }
+        }
+    }
+}
+
+// Singleton: una sola instancia que guarda la lista de equipos
+class AirConditionerManager {
+    public let airconditioners = ArrayList<AirConditionerDevice>()
+
+    private init() {
+        let living = AirConditionerDevice(10001, "Living Room Air Conditioner")
+        living.open()
+        living.connect()
+        airconditioners.add(living)
+
+        let bedroom = AirConditionerDevice(10002, "Bedroom Air Conditioner")
+        bedroom.open()
+        bedroom.connect()
+        airconditioners.add(bedroom)
+    }
+
+    private static let manager = AirConditionerManager()
+
+    public static func getInstance(): AirConditionerManager {
+        manager
+    }
+
+    public func addAirConditioner(device: AirConditionerDevice) {
+        this.airconditioners.add(device)
+    }
+
+    public func removeAirConditioner(index: Int64) {
+        this.airconditioners.remove(at: index)
+    }
+}
+
+func pause() {
+    println("Press Enter to continue.")
+    getStdIn().readln()
+}
+
+func listDevices(manager: AirConditionerManager) {
+    for (i in 0..manager.airconditioners.size) {
+        let ac = manager.airconditioners[i]
+        println("[${i + 1}] Device: ${ac.deviceName}; ID: ${ac.deviceId}")
+    }
+}
 
 main(): Int64 {
-    println("=== Políticas de descuento (Strategy) ===")
-    let pedido = Pedido(1001, "Andres")
-    pedido.agregar(LineaPedido("Portátil", 2500000, 1)).agregar(LineaPedido("Mouse", 80000, 2))
-    println("Subtotal: ${pedido.subtotal()}")
+    let manager = AirConditionerManager.getInstance()
+    unsafe { chcp65001() }
 
-    let politicas: Array<PoliticaDescuento> = [
-        SinDescuento(),
-        DescuentoPorcentaje(5),
-        DescuentoPorVolumen(2000000)
-    ]
-    for (p in politicas) {
-        println("${p.nombre()}: ${pedido.total(p)}")
+    while (true) {
+        unsafe { clearScreen() }
+        println("===== Smart Air Conditioner Device Management Software =====")
+        println("Please enter command: [1] Configure device [2] Add device [3] Delete device [4] Exit software")
+        let order = getStdIn().readln() ?? ""
+        match (order) {
+            case "1" =>
+                listDevices(manager)
+                print("Please enter the number: ")
+                let text = getStdIn().readln() ?? ""
+                if (let Some(n) <- Int64.tryParse(text)) {
+                    if (n >= 1 && n <= manager.airconditioners.size) {
+                        manager.airconditioners[n - 1].operateByConsole()
+                    } else {
+                        println("Incorrect number, please try again!")
+                        pause()
+                    }
+                } else {
+                    println("Incorrect number, please try again!")
+                    pause()
+                }
+            case "2" =>
+                print("Please enter the device ID: ")
+                let idText = getStdIn().readln() ?? ""
+                try {
+                    let id = Int64.parse(idText)
+                    print("Please enter the device name: ")
+                    let name = getStdIn().readln() ?? ""
+                    manager.addAirConditioner(AirConditionerDevice(id, name))
+                    println("Device added successfully!")
+                } catch (e: Exception) {
+                    println("${e}")
+                }
+                pause()
+            case "3" =>
+                listDevices(manager)
+                print("Please enter the number: ")
+                let text = getStdIn().readln() ?? ""
+                if (let Some(n) <- Int64.tryParse(text)) {
+                    if (n >= 1 && n <= manager.airconditioners.size) {
+                        manager.removeAirConditioner(n - 1)
+                        println("Device deleted successfully!")
+                    } else {
+                        println("Number error!")
+                    }
+                } else {
+                    println("Number error!")
+                }
+                pause()
+            case "4" => break
+            case _ => continue
+        }
     }
-    println("Mejor opción: ${mejorPolitica(pedido, politicas).nombre()}")
-
-    println("\n=== Duplicados en 1000 IDs de pedidos ===")
-    let ids = Array<Int64>(1000, {i => i % 800})
-    let (d1, op1) = duplicadosIngenuo(ids)
-    let (d2, op2) = duplicadosOptimizado(ids)
-    println("Ingenuo O(n^2):    ${d1} duplicados, ${op1} comparaciones")
-    println("Optimizado O(n):   ${d2} duplicados, ${op2} operaciones")
-
-    println("\n=== Búsqueda de precios en catálogo de 500 productos ===")
-    let catalogo = Catalogo()
-    for (i in 0..500) {
-        catalogo.registrar("P${i}", 1000 * (i + 1))
-    }
-    let (_, opLineal) = catalogo.precioLineal("P499")
-    let (_, opIndice) = catalogo.precioIndexado("P499")
-    println("Lineal: ${opLineal} operaciones | Indexado: ${opIndice} operación")
-
-    println("\n=== Proyección de ventas (n = 30) ===")
-    println("Recursiva:  ${proyeccionRecursiva(30)}")
-    println("Memoizada:  ${proyeccionMemoizada(30)}")
     return 0
 }
 ```
 
-## `certification/codigo/proyecto-4/src/negocio_test.cj`
+## `certification/codigo/proyecto-4/tarea-4-2-dispositivos/cjpm.toml`
+
+```toml
+[package]
+  cjc-version = "1.2.0"
+  name = "task4_2"
+  description = "Proyecto 4 - Business Function Optimization"
+  version = "1.0.0"
+  target-dir = ""
+  src-dir = ""
+  output-type = "executable"
+  compile-option = "./ffi/program.o"
+  override-compile-option = ""
+  link-option = ""
+  package-configuration = {}
+
+[dependencies]
+
+[test-dependencies]
+```
+
+## `certification/codigo/proyecto-4/tarea-4-2-dispositivos/ffi/program.c`
+
+```c
+#include <stdlib.h>
+
+void chcp65001() {
+#ifdef _WIN32
+    system("chcp 65001");
+#endif
+}
+
+void clearScreen() {
+#ifdef _WIN32
+    system("cls");
+#else
+    system("clear");
+#endif
+}
+```
+
+## `certification/codigo/proyecto-4/tarea-4-2-dispositivos/src/main.cj`
 
 ```swift
-package business_opt
+package task4_2
 
-import std.unittest.*
-import std.unittest.testmacro.*
+import std.env.*
+import std.convert.*   // necesario para Float64.format()
+import task4_2.model.*
 
-@Test
-class DescuentosTest {
-    @TestCase
-    func politicasBasicas(): Unit {
-        @Expect(SinDescuento().aplicar(1000), 1000)
-        @Expect(DescuentoPorcentaje(20).aplicar(1000), 800)
-        @Expect(DescuentoPorVolumen(500).aplicar(1000), 900)
-        @Expect(DescuentoPorVolumen(5000).aplicar(1000), 1000)
-    }
+let sensor = SensorDevice(1001, "My Temperature and Humidity Sensor")
+let airPurifier = AirPurifierDevice(1002, "My Air Purifier")
+let bodyFatScale = BodyFatScaleDevice(1003, "My Body Fat Scale")
 
-    @TestCase
-    func porcentajeInvalidoLanzaExcepcion(): Unit {
-        @ExpectThrows[IllegalArgumentException](DescuentoPorcentaje(150))
-    }
-
-    @TestCase
-    func totalYMejorPolitica(): Unit {
-        let p = Pedido(1, "Cliente")
-        p.agregar(LineaPedido("A", 1000, 3)).agregar(LineaPedido("B", 500, 2))
-        @Expect(p.subtotal(), 4000)
-        @Expect(p.total(DescuentoPorcentaje(25)), 3000)
-        let politicas: Array<PoliticaDescuento> = [SinDescuento(), DescuentoPorcentaje(5), DescuentoPorVolumen(1000)]
-        @Expect(mejorPolitica(p, politicas).nombre(), "10 % por compras desde 1000")
-    }
-
-    @TestCase
-    func lineaInvalidaLanzaExcepcion(): Unit {
-        @ExpectThrows[IllegalArgumentException](LineaPedido("X", 100, 0))
+func operateSensor() {
+    while (true) {
+        clearConsole()
+        sensor.displayStatus()
+        println("Operation: [1] Connect [2] Update [3] Return")
+        let order = getStdIn().readln() ?? ""
+        match (order) {
+            case "1" => if (sensor.isOnline) { sensor.disconnect() } else { sensor.connect() }
+            case "2" => sensor.update()
+            case "3" => break
+            case _ => println("Invalid command input, please try again!")
+        }
     }
 }
 
-@Test
-class OptimizacionTest {
-    @TestCase
-    func ambasVersionesDanElMismoResultado(): Unit {
-        let ids: Array<Int64> = [1, 2, 3, 2, 1, 4, 1]
-        let (d1, op1) = duplicadosIngenuo(ids)
-        let (d2, op2) = duplicadosOptimizado(ids)
-        @Expect(d1, 3)
-        @Expect(d2, 3)
-        @Expect(op2, 7)
-        @Expect(op1 > op2, true)
+func operateAirPurifier() {
+    while (true) {
+        clearConsole()
+        airPurifier.displayStatus()
+        println("Operation: [1] Connect [2] Power [3] Update [4] Return")
+        let order = getStdIn().readln() ?? ""
+        match (order) {
+            case "1" => if (airPurifier.isOnline) { airPurifier.disconnect() } else { airPurifier.connect() }
+            case "2" => airPurifier.togglePower()
+            case "3" => airPurifier.update()
+            case "4" => break
+            case _ => println("Invalid command input, please try again!")
+        }
+    }
+}
+
+func operateBodyFatScale() {
+    while (true) {
+        clearConsole()
+        bodyFatScale.displayStatus()
+        println("Operation: [1] Connect [2] Measure [3] Return")
+        let order = getStdIn().readln() ?? ""
+        match (order) {
+            case "1" => if (bodyFatScale.isOnline) { bodyFatScale.disconnect() } else { bodyFatScale.connect() }
+            case "2" =>
+                let result = bodyFatScale.measure()
+                let weight = result[0] ?? 0.0
+                let bmi = result[1] ?? 0.0
+                println("Measurement result: Weight: ${weight.format(".1")}kg, BMI: ${bmi.format(".1")}kg/m2")
+                println("Press Enter to continue.")
+                getStdIn().readln()
+            case "3" => break
+            case _ => println("Invalid command input, please try again!")
+        }
+    }
+}
+
+main(): Int64 {
+    setUtf8()
+    // Encender y conectar todo al iniciar
+    sensor.connect()
+    airPurifier.open()
+    airPurifier.connect()
+    bodyFatScale.connect()
+
+    while (true) {
+        clearConsole()
+        println("===== Smart Device Management Software =====")
+        sensor.displayStatus()
+        airPurifier.displayStatus()
+        bodyFatScale.displayStatus()
+        println("Select device: [1] Temperature and Humidity Sensor [2] Air Purifier [3] Body Fat Scale [4] Exit Software")
+        let order = getStdIn().readln() ?? ""
+        match (order) {
+            case "1" => operateSensor()
+            case "2" => operateAirPurifier()
+            case "3" => operateBodyFatScale()
+            case "4" => break
+            case _ => println("Command input error, please try again!")
+        }
+    }
+    return 0
+}
+```
+
+## `certification/codigo/proyecto-4/tarea-4-2-dispositivos/src/model/device.cj`
+
+```swift
+package task4_2.model
+
+import std.random.*
+import std.convert.*
+
+public open class Device {
+    public static prop deviceType: String {
+        get() { "DEVICE" }
     }
 
-    @TestCase
-    func catalogoIndexadoEsConstante(): Unit {
-        let c = Catalogo()
-        c.registrar("A", 10)
-        c.registrar("B", 20)
-        c.registrar("C", 30)
-        let (precio, opLineal) = c.precioLineal("C")
-        let (precio2, opIndice) = c.precioIndexado("C")
-        @Expect(precio.getOrThrow(), 30)
-        @Expect(precio2.getOrThrow(), 30)
-        @Expect(opLineal, 3)
-        @Expect(opIndice, 1)
-        let (faltante, _) = c.precioIndexado("Z")
-        @Expect(faltante.isNone(), true)
+    private var _deviceId: Int64
+    public mut prop deviceId: Int64 {
+        get() { _deviceId }
+        set(id) {
+            if (id <= 0) {
+                throw Exception("Device ID cannot be negative")
+            }
+            _deviceId = id
+        }
     }
 
-    @TestCase
-    func proyeccionesCoinciden(): Unit {
-        @Expect(proyeccionMemoizada(0), 0)
-        @Expect(proyeccionMemoizada(10), 55)
-        @Expect(proyeccionRecursiva(20), proyeccionMemoizada(20))
+    public var deviceName: String
+    public var isOnline: Bool = false
+
+    public init(deviceId: Int64, deviceName: String) {
+        this._deviceId = deviceId
+        this.deviceName = deviceName
+    }
+
+    // Si el dispositivo es Openable y está apagado, no se conecta
+    public func connect(): Unit {
+        if (let Some(o) <- (this as Openable)) {
+            if (!o.isOpened) {
+                return
+            }
+        }
+        isOnline = true
+    }
+
+    public func disconnect(): Unit {
+        isOnline = false
+    }
+}
+
+// Dispositivo con batería: cada subclase muestra la batería a su manera
+public abstract class ChargeableDevice <: Device {
+    public static prop deviceType: String {
+        get() { "CHARGEABLE_DEVICE" }
+    }
+
+    public var batteryPercentage: UInt8 = 100
+
+    public init(deviceId: Int64, deviceName: String) {
+        super(deviceId, deviceName)
+    }
+
+    public init(deviceId: Int64, deviceName: String, batteryPercentage: UInt8) {
+        super(deviceId, deviceName)
+        this.batteryPercentage = batteryPercentage
+    }
+
+    public func showBatteryInformation(): Unit
+}
+
+public class AirPurifierDevice <: Device & Openable & TemperatureMonitoring & HumidityMonitoring {
+    public static prop deviceType: String {
+        get() { "AIR_PURIFIER_DEVICE" }
+    }
+
+    private var _humidity: Float64 = 0.0
+    private var _temperature: Float64 = 0.0
+    private var _pm25: Float64 = 0.0
+    private var _isOpened: Bool = false
+
+    public prop humidity: Float64 {
+        get() { _humidity }
+    }
+
+    public prop temperature: Float64 {
+        get() { _temperature }
+    }
+
+    public prop isOpened: Bool {
+        get() { _isOpened }
+    }
+
+    public prop pm25: Float64 {
+        get() { _pm25 }
+    }
+
+    public init(deviceId: Int64, deviceName: String) {
+        super(deviceId, deviceName)
+    }
+
+    private func refreshData() {
+        _temperature = Random().nextGaussianFloat64(mean: 28.0, sigma: 1.0)
+        _humidity = Random().nextGaussianFloat64(mean: 50.0, sigma: 15.0)
+        _pm25 = Random().nextGaussianFloat64(mean: 30.0, sigma: 10.0)
+    }
+
+    public func open(): Unit {
+        _isOpened = true
+        refreshData()
+    }
+
+    public func close(): Unit {
+        _isOpened = false
+        isOnline = false
+    }
+
+    public func togglePower(): Unit {
+        if (_isOpened) {
+            close()
+        } else {
+            open()
+        }
+    }
+
+    // Solo actualiza si está encendido y conectado
+    public func update(): Unit {
+        if (!_isOpened || !isOnline) {
+            return
+        }
+        refreshData()
+    }
+
+    public func displayStatus(): Unit {
+        update()
+        let state = if (_isOpened) {
+            "On PM2.5: ${pm25.format(".1")}ug/m3 ${temperature.format(".1")}°C ${humidity.format(".0")}%"
+        } else {
+            "Off"
+        }
+        println("---------- ${deviceId} ${deviceName} ----------")
+        println("Connection status: ${isOnline}")
+        println("Current status: ${state}")
+    }
+}
+
+public class SensorDevice <: ChargeableDevice & TemperatureMonitoring & HumidityMonitoring {
+    public static prop deviceType: String {
+        get() { "SENSOR_DEVICE" }
+    }
+
+    private var _humidity: Float64 = 0.0
+    private var _temperature: Float64 = 0.0
+
+    public prop humidity: Float64 {
+        get() { _humidity }
+    }
+
+    public prop temperature: Float64 {
+        get() { _temperature }
+    }
+
+    public init(deviceId: Int64, deviceName: String) {
+        super(deviceId, deviceName)
+        _temperature = Random().nextGaussianFloat64(mean: 28.0, sigma: 1.0)
+        _humidity = Random().nextGaussianFloat64(mean: 50.0, sigma: 15.0)
+    }
+
+    // Al actualizar, la batería baja un poco (simulación)
+    public func update(): Unit {
+        if (!isOnline) {
+            return
+        }
+        _temperature = Random().nextGaussianFloat64(mean: 28.0, sigma: 1.0)
+        _humidity = Random().nextGaussianFloat64(mean: 50.0, sigma: 15.0)
+        if (batteryPercentage > 0) {
+            batteryPercentage--
+        }
+    }
+
+    public func showBatteryInformation(): Unit {
+        println("Current battery level: ${batteryPercentage}%")
+    }
+
+    public func displayStatus(): Unit {
+        update()
+        println("---------- ${deviceId} ${deviceName} ----------")
+        println("Connection status: ${isOnline}")
+        showBatteryInformation()
+        println("Current status: ${temperature.format(".1")}°C ${humidity.format(".0")}%")
+    }
+}
+
+public class BodyFatScaleDevice <: ChargeableDevice {
+    public static prop deviceType: String {
+        get() { "BODY_FAT_SCALE_DEVICE" }
+    }
+
+    public init(deviceId: Int64, deviceName: String) {
+        super(deviceId, deviceName)
+    }
+
+    // Devuelve (peso, IMC); None si el dispositivo está desconectado
+    public func measure(): (Option<Float64>, Option<Float64>) {
+        if (!isOnline) {
+            return (None, None)
+        }
+        let weight = Random().nextGaussianFloat64(mean: 60.0, sigma: 15.0)
+        let bmi = Random().nextGaussianFloat64(mean: 20.0, sigma: 2.0)
+        if (batteryPercentage > 0) {
+            batteryPercentage--
+        }
+        return (Some(weight), Some(bmi))
+    }
+
+    public func showBatteryInformation(): Unit {
+        if (batteryPercentage > 20) {
+            println("Battery is sufficient.")
+        } else {
+            println("Low battery, please recharge in time.")
+        }
+    }
+
+    public func displayStatus(): Unit {
+        println("---------- ${deviceId} ${deviceName} ----------")
+        showBatteryInformation()
+        println("Connection status: ${isOnline}")
     }
 }
 ```
 
-## `certification/codigo/proyecto-4/src/optimizacion.cj`
+## `certification/codigo/proyecto-4/tarea-4-2-dispositivos/src/model/interface.cj`
 
 ```swift
-package business_opt
+package task4_2.model
 
-import std.collection.*
-
-// Comparación de versiones ingenua vs optimizada. Cada función devuelve
-// (resultado, operaciones) para medir el costo de forma determinista,
-// sin depender de la velocidad de la máquina.
-
-// O(n^2): compara cada par de IDs.
-public func duplicadosIngenuo(ids: Array<Int64>): (Int64, Int64) {
-    var duplicados: Int64 = 0
-    var operaciones: Int64 = 0
-    var i: Int64 = 0
-    while (i < ids.size) {
-        var j: Int64 = 0
-        var repetido = false
-        while (j < i) {
-            operaciones += 1
-            if (ids[j] == ids[i]) {
-                repetido = true
-                break
-            }
-            j += 1
-        }
-        if (repetido) {
-            duplicados += 1
-        }
-        i += 1
-    }
-    return (duplicados, operaciones)
+public interface Openable {
+    prop isOpened: Bool
+    func open(): Unit
+    func close(): Unit
+    func togglePower(): Unit
 }
 
-// O(n): un HashSet recuerda los IDs ya vistos.
-public func duplicadosOptimizado(ids: Array<Int64>): (Int64, Int64) {
-    let vistos = HashSet<Int64>()
-    var duplicados: Int64 = 0
-    var operaciones: Int64 = 0
-    for (id in ids) {
-        operaciones += 1
-        if (vistos.contains(id)) {
-            duplicados += 1
-            continue
-        }
-        vistos.add(id)
-    }
-    return (duplicados, operaciones)
+public interface TemperatureMonitoring {
+    prop temperature: Float64
+    func update(): Unit
 }
 
-// Catálogo de precios: búsqueda lineal O(n) vs índice HashMap O(1).
-public class Catalogo {
-    private let nombres = ArrayList<String>()
-    private let precios = ArrayList<Int64>()
-    private let indice = HashMap<String, Int64>()
-
-    public func registrar(nombre: String, precio: Int64): Unit {
-        nombres.add(nombre)
-        precios.add(precio)
-        indice[nombre] = precio
-    }
-
-    public func precioLineal(nombre: String): (Option<Int64>, Int64) {
-        var operaciones: Int64 = 0
-        var i: Int64 = 0
-        while (i < nombres.size) {
-            operaciones += 1
-            if (nombres[i] == nombre) {
-                return (Some(precios[i]), operaciones)
-            }
-            i += 1
-        }
-        return (None, operaciones)
-    }
-
-    public func precioIndexado(nombre: String): (Option<Int64>, Int64) {
-        if (indice.contains(nombre)) {
-            return (Some(indice[nombre]), 1)
-        }
-        return (None, 1)
-    }
-}
-
-// Proyección de ventas acumuladas tipo Fibonacci: recursiva vs memoizada.
-public func proyeccionRecursiva(n: Int64): Int64 {
-    if (n <= 1) {
-        return n
-    }
-    return proyeccionRecursiva(n - 1) + proyeccionRecursiva(n - 2)
-}
-
-public func proyeccionMemoizada(n: Int64): Int64 {
-    if (n <= 1) {
-        return n
-    }
-    var anterior: Int64 = 0
-    var actual: Int64 = 1
-    var i: Int64 = 2
-    while (i <= n) {
-        let siguiente = anterior + actual
-        anterior = actual
-        actual = siguiente
-        i += 1
-    }
-    return actual
+public interface HumidityMonitoring {
+    prop humidity: Float64
+    func update(): Unit
 }
 ```
 
-## `certification/codigo/proyecto-4/src/pedidos.cj`
+## `certification/codigo/proyecto-4/tarea-4-2-dispositivos/src/model/utils.cj`
 
 ```swift
-package business_opt
+package task4_2.model
+
+foreign func clearScreen(): Unit
+foreign func chcp65001(): Unit
+
+// Envoltorio público para que main limpie la pantalla sin declarar el foreign
+public func clearConsole() {
+    unsafe { clearScreen() }
+}
+
+public func setUtf8() {
+    unsafe { chcp65001() }
+}
+```
+
+## `certification/codigo/proyecto-4/tarea-4-3-habitaciones/cjpm.toml`
+
+```toml
+[package]
+  cjc-version = "1.2.0"
+  name = "task4_3"
+  description = "Proyecto 4 - Business Function Optimization"
+  version = "1.0.0"
+  target-dir = ""
+  src-dir = ""
+  output-type = "executable"
+  compile-option = "./ffi/program.o"
+  override-compile-option = ""
+  link-option = ""
+  package-configuration = {}
+
+[dependencies]
+
+[test-dependencies]
+```
+
+## `certification/codigo/proyecto-4/tarea-4-3-habitaciones/ffi/program.c`
+
+```c
+#include <stdlib.h>
+
+void chcp65001() {
+#ifdef _WIN32
+    system("chcp 65001");
+#endif
+}
+
+void clearScreen() {
+#ifdef _WIN32
+    system("cls");
+#else
+    system("clear");
+#endif
+}
+```
+
+## `certification/codigo/proyecto-4/tarea-4-3-habitaciones/src/main.cj`
+
+```swift
+package task4_3
+
+import std.env.*
+import std.convert.*   // necesario para Float64.format()
+import task4_3.model.*
+
+func manageDevice(room: Room) {
+    while (true) {
+        clearConsole()
+        println("===== Smart Home Device Management Software =====")
+        println("=== Room: ${room.roomId} ${room.roomName} ===")
+        println("Devices: ${room.devicesCount}")
+        println("Temperature: ${(room.temperature ?? 0.0).format(".1")}°C, Humidity: ${(room.humidity ?? 0.0).format(".1")}%")
+        for (device in room.devices) {
+            println("${device.deviceId} ${device.deviceName} Connection Status: ${device.isOnline}")
+        }
+        var menu = "Select device: "
+        for (i in 0..room.devices.size) {
+            menu += "[${i + 1}] ${room.devices[i].deviceName} "
+        }
+        menu += "[${room.devices.size + 1}] Open and connect all devices "
+        menu += "[${room.devices.size + 2}] Close all devices "
+        menu += "[${room.devices.size + 3}] Return"
+        println(menu)
+
+        let order = getStdIn().readln() ?? ""
+        if (order == (room.devices.size + 1).toString()) {
+            room.openAllDevices()
+            room.connectAllDevices()
+        } else if (order == (room.devices.size + 2).toString()) {
+            room.closeAllDevices()
+        } else if (order == (room.devices.size + 3).toString()) {
+            break
+        } else {
+            var found = false
+            for (i in 0..room.devices.size) {
+                if (order == (i + 1).toString()) {
+                    // Polimorfismo: cada tipo de dispositivo tiene su propio panel
+                    room.devices[i].operate()
+                    found = true
+                }
+            }
+            if (!found) {
+                println("Command input error, please try again!")
+                println("Press Enter to continue.")
+                getStdIn().readln()
+            }
+        }
+    }
+}
+
+main(): Int64 {
+    let roomManager = RoomManager.getInstance()
+    for (room in roomManager.rooms) {
+        room.openAllDevices()
+        room.connectAllDevices()
+    }
+    setUtf8()
+
+    while (true) {
+        clearConsole()
+        println("===== Smart Home Device Management Software =====")
+        for (room in roomManager.rooms) {
+            println("=== Room: ${room.roomId} ${room.roomName} ===")
+            println("Devices: ${room.devicesCount}")
+            println("Temperature: ${(room.temperature ?? 0.0).format(".1")}°C, Humidity: ${(room.humidity ?? 0.0).format(".1")}%")
+        }
+        var menu = "Select room: "
+        for (i in 0..roomManager.rooms.size) {
+            menu += "[${i + 1}] ${roomManager.rooms[i].roomName} "
+        }
+        menu += "[${roomManager.rooms.size + 1}] Exit"
+        println(menu)
+
+        let order = getStdIn().readln() ?? ""
+        if (order == (roomManager.rooms.size + 1).toString()) {
+            break
+        }
+        var found = false
+        for (i in 0..roomManager.rooms.size) {
+            if (order == (i + 1).toString()) {
+                manageDevice(roomManager.rooms[i])
+                found = true
+            }
+        }
+        if (!found) {
+            println("Incorrect command input, please try again!")
+            println("Press Enter to continue.")
+            getStdIn().readln()
+        }
+    }
+    return 0
+}
+```
+
+## `certification/codigo/proyecto-4/tarea-4-3-habitaciones/src/model/device.cj`
+
+```swift
+package task4_3.model
+
+import std.env.*
+import std.random.*
+import std.convert.*
+
+public enum FanSpeed {
+    | LOW
+    | MIDDLE
+    | HIGH
+
+    public func toString(): String {
+        match (this) {
+            case LOW => "Low Speed"
+            case MIDDLE => "Medium Speed"
+            case HIGH => "High Speed"
+        }
+    }
+}
+
+public open class Device {
+    public static prop deviceType: String {
+        get() { "DEVICE" }
+    }
+
+    private var _deviceId: Int64
+    public mut prop deviceId: Int64 {
+        get() { _deviceId }
+        set(id) {
+            if (id <= 0) {
+                throw Exception("Device ID cannot be negative")
+            }
+            _deviceId = id
+        }
+    }
+
+    public var deviceName: String
+    public var isOnline: Bool = false
+
+    public init(deviceId: Int64, deviceName: String) {
+        this._deviceId = deviceId
+        this.deviceName = deviceName
+    }
+
+    public func connect(): Unit {
+        if (let Some(o) <- (this as Openable)) {
+            if (!o.isOpened) {
+                return
+            }
+        }
+        isOnline = true
+    }
+
+    public func disconnect(): Unit {
+        isOnline = false
+    }
+
+    // Las subclases los sobrescriben (polimorfismo)
+    public open func displayStatus(): Unit {
+        println("Status display is not implemented!")
+    }
+
+    public open func operate(): Unit {
+        println("Operation is not implemented!")
+    }
+}
+
+public class AirPurifierDevice <: Device & Openable & TemperatureMonitoring & HumidityMonitoring {
+    public static prop deviceType: String {
+        get() { "AIR_PURIFIER_DEVICE" }
+    }
+
+    private var _humidity: Float64 = 0.0
+    private var _temperature: Float64 = 0.0
+    private var _pm25: Float64 = 0.0
+    private var _isOpened: Bool = false
+
+    public prop humidity: Float64 {
+        get() { _humidity }
+    }
+
+    public prop temperature: Float64 {
+        get() { _temperature }
+    }
+
+    public prop isOpened: Bool {
+        get() { _isOpened }
+    }
+
+    public prop pm25: Float64 {
+        get() { _pm25 }
+    }
+
+    public init(deviceId: Int64, deviceName: String) {
+        super(deviceId, deviceName)
+    }
+
+    private func refreshData() {
+        _temperature = Random().nextGaussianFloat64(mean: 28.0, sigma: 1.0)
+        _humidity = Random().nextGaussianFloat64(mean: 50.0, sigma: 15.0)
+        _pm25 = Random().nextGaussianFloat64(mean: 30.0, sigma: 10.0)
+    }
+
+    public func open(): Unit {
+        _isOpened = true
+        refreshData()
+    }
+
+    public func close(): Unit {
+        _isOpened = false
+        isOnline = false
+    }
+
+    public func togglePower(): Unit {
+        if (_isOpened) {
+            close()
+        } else {
+            open()
+        }
+    }
+
+    public func update(): Unit {
+        if (!_isOpened || !isOnline) {
+            return
+        }
+        refreshData()
+    }
+
+    public override func displayStatus(): Unit {
+        update()
+        let state = if (_isOpened) {
+            "On PM2.5: ${pm25.format(".1")}ug/m3 ${temperature.format(".1")}°C ${humidity.format(".0")}%"
+        } else {
+            "Off"
+        }
+        println("---------- ${deviceId} ${deviceName} ----------")
+        println("Connection status: ${isOnline}")
+        println("Current status: ${state}")
+    }
+
+    public override func operate(): Unit {
+        while (true) {
+            clearConsole()
+            displayStatus()
+            println("Operations: [1] Connect [2] Power [3] Update [4] Back")
+            let order = getStdIn().readln() ?? ""
+            match (order) {
+                case "1" => if (isOnline) { disconnect() } else { connect() }
+                case "2" => togglePower()
+                case "3" => update()
+                case "4" => break
+                case _ => println("Command input error, please re-enter!")
+            }
+        }
+    }
+}
+
+public class AirConditionerDevice <: Device & Openable & TemperatureMonitoring & HumidityMonitoring {
+    public static prop deviceType: String {
+        get() { "AIR_CONDITIONER_DEVICE" }
+    }
+
+    private var _humidity: Float64 = 0.0
+    private var _temperature: Float64 = 0.0
+    private var _isOpened: Bool = false
+    private var _targetTemperature: Int64 = 25
+    public var fanSpeed: FanSpeed = FanSpeed.MIDDLE
+
+    public prop humidity: Float64 {
+        get() { _humidity }
+    }
+
+    public prop temperature: Float64 {
+        get() { _temperature }
+    }
+
+    public prop isOpened: Bool {
+        get() { _isOpened }
+    }
+
+    public mut prop targetTemperature: Int64 {
+        get() { _targetTemperature }
+        set(value) {
+            if (value < 16) {
+                throw Exception("Temperature cannot be lower than 16°C.")
+            }
+            if (value > 28) {
+                throw Exception("Temperature cannot be higher than 28°C.")
+            }
+            _targetTemperature = value
+        }
+    }
+
+    public init(deviceId: Int64, deviceName: String) {
+        super(deviceId, deviceName)
+    }
+
+    public func update(): Unit {
+        if (_isOpened) {
+            _temperature = Random().nextGaussianFloat64(mean: 28.0, sigma: 1.0)
+            _humidity = Random().nextGaussianFloat64(mean: 50.0, sigma: 15.0)
+        }
+    }
+
+    public func open(): Unit {
+        _isOpened = true
+        update()
+    }
+
+    public func close(): Unit {
+        _isOpened = false
+        isOnline = false
+        _temperature = 0.0
+        _humidity = 0.0
+    }
+
+    public func togglePower(): Unit {
+        if (_isOpened) {
+            close()
+        } else {
+            open()
+        }
+    }
+
+    public func toggleFanSpeed(): Unit {
+        fanSpeed = match (fanSpeed) {
+            case FanSpeed.LOW => FanSpeed.MIDDLE
+            case FanSpeed.MIDDLE => FanSpeed.HIGH
+            case FanSpeed.HIGH => FanSpeed.LOW
+        }
+    }
+
+    public override func displayStatus(): Unit {
+        update()
+        let state = if (_isOpened) {
+            "On ${temperature.format(".1")}°C ${humidity.format(".0")}%"
+        } else {
+            "Off"
+        }
+        println("---------- ${deviceId} ${deviceName} ----------")
+        println("Connection status: ${isOnline}")
+        println("Current status: ${state}")
+        println("Preset temperature: ${targetTemperature}°C")
+        println("Fan speed mode: ${fanSpeed.toString()}")
+    }
+
+    public override func operate(): Unit {
+        while (true) {
+            clearConsole()
+            displayStatus()
+            println("Operation: [1] Connect [2] Power [3] Temperature [4] Fan Speed [5] Exit")
+            let order = getStdIn().readln() ?? ""
+            match (order) {
+                case "1" => if (isOnline) { disconnect() } else { connect() }
+                case "2" => togglePower()
+                case "3" =>
+                    // Solo si está encendido y conectado
+                    if (_isOpened && isOnline) {
+                        print("Please enter temperature (16~28): ")
+                        try {
+                            targetTemperature = Utils.inputInfo<Int64>(16, 28)
+                        } catch (e: Exception) {
+                            println("${e}")
+                            println("Press Enter to continue.")
+                            getStdIn().readln()
+                        }
+                    }
+                case "4" =>
+                    if (_isOpened && isOnline) {
+                        toggleFanSpeed()
+                    }
+                case "5" => break
+                case _ => println("Command input error, please re-enter!")
+            }
+        }
+    }
+}
+```
+
+## `certification/codigo/proyecto-4/tarea-4-3-habitaciones/src/model/interface.cj`
+
+```swift
+package task4_3.model
+
+public interface Openable {
+    prop isOpened: Bool
+    func open(): Unit
+    func close(): Unit
+    func togglePower(): Unit
+}
+
+public interface TemperatureMonitoring {
+    prop temperature: Float64
+    func update(): Unit
+}
+
+public interface HumidityMonitoring {
+    prop humidity: Float64
+    func update(): Unit
+}
+```
+
+## `certification/codigo/proyecto-4/tarea-4-3-habitaciones/src/model/room.cj`
+
+```swift
+package task4_3.model
 
 import std.collection.*
 
-public struct LineaPedido {
-    public let producto: String
-    public let precioUnitario: Int64
-    public let cantidad: Int64
+public enum RoomType {
+    | LIVING_ROOM
+    | BED_ROOM
+}
 
-    public init(producto: String, precioUnitario: Int64, cantidad: Int64) {
-        if (precioUnitario < 0 || cantidad <= 0) {
-            throw IllegalArgumentException("Línea de pedido inválida: ${producto}")
-        }
-        this.producto = producto
-        this.precioUnitario = precioUnitario
-        this.cantidad = cantidad
+public class Room {
+    public var roomId: Int64
+    public var roomName: String
+    public var roomType: RoomType
+    public let devices: ArrayList<Device> = ArrayList<Device>()
+
+    public prop devicesCount: Int64 {
+        get() { devices.size }
     }
 
-    public func subtotal(): Int64 {
-        return precioUnitario * cantidad
+    // Temperatura del primer dispositivo conectado que mida temperatura
+    public prop temperature: Option<Float64> {
+        get() {
+            for (device in devices) {
+                if (device.isOnline) {
+                    if (let Some(t) <- (device as TemperatureMonitoring)) {
+                        return Some(t.temperature)
+                    }
+                }
+            }
+            return None
+        }
+    }
+
+    // Humedad del primer dispositivo conectado que mida humedad
+    public prop humidity: Option<Float64> {
+        get() {
+            for (device in devices) {
+                if (device.isOnline) {
+                    if (let Some(h) <- (device as HumidityMonitoring)) {
+                        return Some(h.humidity)
+                    }
+                }
+            }
+            return None
+        }
+    }
+
+    public init(roomId: Int64, roomName: String, roomType: RoomType) {
+        this.roomId = roomId
+        this.roomName = roomName
+        this.roomType = roomType
+    }
+
+    public func addDevice(device: Device) {
+        devices.add(device)
+    }
+
+    public func removeDeviceById(deviceId: Int64) {
+        devices.removeIf { d: Device => d.deviceId == deviceId }
+    }
+
+    public func openAllDevices() {
+        for (device in devices) {
+            if (let Some(o) <- (device as Openable)) {
+                o.open()
+            }
+        }
+    }
+
+    public func connectAllDevices() {
+        for (device in devices) {
+            device.connect()
+        }
+    }
+
+    public func closeAllDevices() {
+        for (device in devices) {
+            if (let Some(o) <- (device as Openable)) {
+                o.close()
+            }
+        }
     }
 }
 
-public class Pedido {
-    public let id: Int64
-    public let cliente: String
-    private let lineas = ArrayList<LineaPedido>()
+// Singleton con la lista de habitaciones
+public class RoomManager {
+    public let rooms: ArrayList<Room>
 
-    public init(id: Int64, cliente: String) {
-        this.id = id
-        this.cliente = cliente
+    private init() {
+        rooms = ArrayList<Room>()
+
+        let room1 = Room(2001, "My Bedroom", RoomType.BED_ROOM)
+        room1.addDevice(AirPurifierDevice(1001, "Bedroom Air Purifier"))
+        room1.addDevice(AirConditionerDevice(1002, "Bedroom Air Conditioner"))
+        rooms.add(room1)
+
+        let room2 = Room(2002, "My Living Room", RoomType.LIVING_ROOM)
+        room2.addDevice(AirConditionerDevice(2001, "Living Room Air Conditioner"))
+        rooms.add(room2)
     }
 
-    public func agregar(linea: LineaPedido): Pedido {
-        lineas.add(linea)
-        return this
-    }
+    private static let instance: RoomManager = RoomManager()
 
-    public func subtotal(): Int64 {
-        var s: Int64 = 0
-        for (l in lineas) {
-            s += l.subtotal()
-        }
-        return s
-    }
-
-    public func total(politica: PoliticaDescuento): Int64 {
-        return politica.aplicar(subtotal())
+    public static func getInstance(): RoomManager {
+        return instance
     }
 }
+```
 
-// Devuelve la política que deja el menor total para el cliente.
-public func mejorPolitica(pedido: Pedido, politicas: Array<PoliticaDescuento>): PoliticaDescuento {
-    if (politicas.size == 0) {
-        throw IllegalArgumentException("Se necesita al menos una política")
-    }
-    var mejor = politicas[0]
-    for (p in politicas) {
-        if (pedido.total(p) < pedido.total(mejor)) {
-            mejor = p
+## `certification/codigo/proyecto-4/tarea-4-3-habitaciones/src/model/utils.cj`
+
+```swift
+package task4_3.model
+
+import std.convert.*
+import std.env.*
+
+foreign func clearScreen(): Unit
+foreign func chcp65001(): Unit
+
+public func clearConsole() {
+    unsafe { clearScreen() }
+}
+
+public func setUtf8() {
+    unsafe { chcp65001() }
+}
+
+public class Utils {
+    // Lee de consola y convierte a T; 3 intentos
+    public static func inputInfo<T>(): T where T <: Parsable<T> {
+        var retry = 3
+        while (retry > 0) {
+            let input = getStdIn().readln() ?? ""
+            if (let Some(v) <- T.tryParse(input)) {
+                return v
+            }
+            print("Input error, please re-enter: ")
+            retry--
         }
+        throw Exception("Input error exceeded 3 times, entry cancelled!")
     }
-    return mejor
+
+    // Igual, pero además valida que esté entre min y max
+    public static func inputInfo<T>(min: T, max: T): T where T <: Parsable<T> & Comparable<T> {
+        var retry = 3
+        while (retry > 0) {
+            let input = getStdIn().readln() ?? ""
+            if (let Some(v) <- T.tryParse(input)) {
+                if (v >= min && v <= max) {
+                    return v
+                }
+                print("Value out of range, please re-enter: ")
+            } else {
+                print("Input error, please re-enter: ")
+            }
+            retry--
+        }
+        throw Exception("Input error exceeded 3 times, entry cancelled!")
+    }
 }
 ```
 
@@ -2284,7 +3260,7 @@ Para la entrega final: pestaña **Actions → Certificación Cangjie CI → Run 
 | YAML del workflow y compose válidos; scripts `bash -n` correctos; paréntesis/llaves balanceados en todos los `.cj` | ✔ |
 | `.gitignore` excluye `target/`, binarios, `.DS_Store`, `__MACOSX` y no excluye PNG/PDF | ✔ |
 | `.gitattributes` fuerza LF en `.cj/.sh/.toml` (evita errores de `\r` en CI) | ✔ |
-| Compilación real con SDK 1.2.1 | ✔ Windows: los 5 proyectos compilan con `cjpm build` y `hola-cjc` con `cjc`. Linux (SDK 1.2.1 x64): `scripts/probar-todo.sh` termina con código 0: build + run + **8/8 pruebas en verde** (cjpmDemo 1, proyecto-4 7); las tareas de los proyectos 2 y 3 se ejecutan con entrada simulada. |
+| Compilación real con SDK 1.2.1 | ✔ Windows: los 5 proyectos compilan con `cjpm build` y `hola-cjc` con `cjc`. Linux (SDK 1.2.1 x64): `scripts/probar-todo.sh` termina con código 0: build + run + **prueba unitaria en verde** (cjpmDemo); las 10 tareas de los proyectos 2, 3 y 4 se ejecutan con entrada simulada. |
 | Declaración `package` | ✔ Cada `.cj` empieza con `package <nombre del cjpm.toml>`: el SDK 1.2.1 la exige cuando el paquete tiene varios archivos. |
 | Evidencias 00, 02–05 y `certificado.pdf` | ⏳ Pendientes: deben salir de tu cuenta real |
 
@@ -2298,6 +3274,8 @@ Para la entrega final: pestaña **Actions → Certificación Cangjie CI → Run 
 | Error al compilar desde OneDrive o rutas con tildes | Rutas con espacios/acentos | Clona el repo en `C:\dev\TU_REPO`. |
 | `cjpm` se queja de `cjc-version` | SDK distinto a 1.2.0 | Cambia `cjc-version` en el `cjpm.toml` a la versión que muestra `cjc -v`. El CI ya lo hace solo. |
 | Error de API como `add` vs `append`/`put` | SDK 0.53.x (antiguo) | Usa SDK 1.x. En 1.x `ArrayList`/`HashSet` usan `add`. |
+| `undeclared identifier 'format'` | Falta `import std.convert.*` en el archivo que usa `Float64.format()` | Agrega el import en ese archivo. |
+| Proyecto 4: `cannot find ./ffi/program.o` | No se compiló el código C | `cc -c ffi/program.c -o ffi/program.o` (gcc o clang) antes de `cjpm build`. |
 | `hola.exe` no aparece en Windows | Falta extensión | `cjc main.cj -o hola.exe`. |
 | Falla el job de CI al instalar el SDK | Cambio en canales STS/LTS | El workflow reintenta con LTS; si ambos fallan, fija `version:` a un número concreto en el YAML. |
 | Aparecen `.DS_Store` o `__MACOSX` | Archivos copiados de macOS | Ya están en `.gitignore`; si se colaron: `git rm -r --cached '**/.DS_Store'`. |
@@ -2316,10 +3294,10 @@ Para la entrega final: pestaña **Actions → Certificación Cangjie CI → Run 
 - [x] `evidencias/01-proyecto-1.png`
 - [x] `evidencias/02-proyecto-2.png` + fila del proyecto 2 en el README
 - [x] `evidencias/03-proyecto-3.png` + fila del proyecto 3
-- [ ] `evidencias/04-proyecto-4.png` + fila del proyecto 4
-- [ ] `evidencias/05-examen-final.png` + nota del examen
-- [ ] `certificado.pdf` descargado de Huawei Talent
-- [ ] Código de proyectos 2–4 revisado contra las tareas reales del curso
-- [ ] Sección "Relación con la asignatura" personalizada
+- [x] `evidencias/04-proyecto-4.png` + fila del proyecto 4
+- [x] `evidencias/05-examen-final.png` + nota del examen
+- [x] `certificado.pdf` descargado de Huawei Talent
+- [x] Código de proyectos 2–4 = tareas reales del curso
+- [x] Sección "Relación con la asignatura" personalizada
 - [ ] `STRICT=1 bash scripts/validar-certificacion.sh` → 0 errores
 - [ ] Push hecho y workflow **Certificación Cangjie CI** en verde

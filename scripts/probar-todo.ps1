@@ -35,12 +35,22 @@ $Proyectos = [ordered]@{
     "proyecto-3\tarea-3-2-gestion-dispositivos" = "2`n1001`nHaidian`n2`n1002`nXicheng`n1`n4`n1002`nChaoyang`n5`nChaoyang`n3`n1001`n1`n6"
     "proyecto-3\tarea-3-3-analisis-csv" = "1`n2`n3`n4"
     "proyecto-3\tarea-3-4-funcional" = "1`n2`n3`n4"
-    "proyecto-4"                         = ""
+    "proyecto-4\tarea-4-1-aire-acondicionado" = "1`n1`n3`n30`n`n3`n22`n4`n5`n2`n10003`nOffice AC`n`n3`n3`n`n4"
+    "proyecto-4\tarea-4-2-dispositivos" = "1`n2`n3`n2`n2`n4`n3`n2`n`n3`n4"
+    "proyecto-4\tarea-4-3-habitaciones" = "1`n2`n3`n22`n4`n5`n4`n3`n5`n3"
 }
 foreach ($p in $Proyectos.Keys) {
     Write-Host "==> $p"
     Push-Location (Join-Path $Cod $p)
     try {
+        if (Test-Path "ffi\program.c") {
+            $cc = @("clang", "gcc") | Where-Object { Get-Command $_ -ErrorAction SilentlyContinue } | Select-Object -First 1
+            if (-not $cc) {
+                Write-Warning "Se omite $p: necesita un compilador de C (clang o gcc) para ffi\program.c"
+                continue
+            }
+            Invoke-Paso "$cc -c ffi\program.c -o ffi\program.o"
+        }
         Invoke-Paso "cjpm build"
         $entrada = $Proyectos[$p]
         $entrada | cjpm run

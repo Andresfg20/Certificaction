@@ -57,8 +57,14 @@ jobs:
             entrada: '1\n2\n3\n4\n'
           - proyecto: proyecto-3/tarea-3-4-funcional
             entrada: '1\n2\n3\n4\n'
-          - proyecto: proyecto-4
-            entrada: ""
+          - proyecto: proyecto-4/tarea-4-1-aire-acondicionado
+            entrada: '1\n1\n3\n30\n\n3\n22\n4\n5\n2\n10003\nOffice AC\n\n3\n3\n\n4\n'
+          - proyecto: proyecto-4/tarea-4-2-dispositivos
+            entrada: '1\n2\n3\n2\n2\n4\n3\n2\n\n3\n4\n'
+          - proyecto: proyecto-4/tarea-4-3-habitaciones
+            entrada: '1\n2\n3\n22\n4\n5\n4\n3\n5\n3\n'
+    env:
+      TERM: dumb
     defaults:
       run:
         working-directory: certification/codigo/${{ matrix.proyecto }}
@@ -86,6 +92,10 @@ jobs:
           CJV="$(cjc -v | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)"
           sed -i "s/cjc-version = \".*\"/cjc-version = \"${CJV}\"/" cjpm.toml
           grep cjc-version cjpm.toml
+
+      - name: Compilar código C para FFI (proyecto 4)
+        run: |
+          if [ -f ffi/program.c ]; then cc -c ffi/program.c -o ffi/program.o; fi
 
       - name: Build
         run: cjpm build
