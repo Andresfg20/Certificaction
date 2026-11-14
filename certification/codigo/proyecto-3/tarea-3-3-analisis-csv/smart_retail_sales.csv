@@ -1,0 +1,11 @@
+date,machineId,region,timestamp,productId,productName,price,quantity,total,status
+2025-05-03,1001,Haidian District,09:15:22,P01,Cola,3.50,2,7.00,Success
+2025-05-03,1002,Dongcheng District,10:02:10,P02,Chips,5.00,1,5.00,Success
+2025-05-04,1003,Haidian District,11:45:00,P03,Water,2.00,3,6.00,Failed
+2025-05-04,1004,Xicheng District,12:30:41,P01,Cola,3.50,4,14.00,Success
+2025-06-01,1005,Chaoyang District,08:20:05,P04,Juice,6.00,2,12.00,Success
+2025-06-01,1006,Fengtai District,14:10:33,P02,Chips,5.00,5,25.00,Success
+2025-06-02,1002,Dongcheng District,15:55:12,P03,Water,2.00,6,12.00,Success
+2025-06-02,1001,Haidian District,16:40:48,P04,Juice,6.00,1,6.00,Failed
+2025-07-10,1004,Xicheng District,09:05:19,P01,Cola,3.50,3,10.50,Success
+2025-07-10,1005,Chaoyang District,13:25:50,P02,Chips,5.00,2,10.00,Success

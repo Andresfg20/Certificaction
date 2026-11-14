@@ -31,7 +31,10 @@ $Proyectos = [ordered]@{
     "proyecto-2\tarea-2-1-consola"       = "Corhuila`n12`n35.5`nyes"
     "proyecto-2\tarea-2-2-guardar-logs"  = "1`n2`n3`n4`n5"
     "proyecto-2\tarea-2-3-filtrar-logs"  = "3`n5`n6"
-    "proyecto-3"                         = ""
+    "proyecto-3\tarea-3-1-validacion" = "abc`n999`n1005`nBogota`nHaidian"
+    "proyecto-3\tarea-3-2-gestion-dispositivos" = "2`n1001`nHaidian`n2`n1002`nXicheng`n1`n4`n1002`nChaoyang`n5`nChaoyang`n3`n1001`n1`n6"
+    "proyecto-3\tarea-3-3-analisis-csv" = "1`n2`n3`n4"
+    "proyecto-3\tarea-3-4-funcional" = "1`n2`n3`n4"
     "proyecto-4"                         = ""
 }
 foreach ($p in $Proyectos.Keys) {

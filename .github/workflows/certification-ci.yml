@@ -49,8 +49,14 @@ jobs:
             entrada: '1\n2\n3\n4\n5\n'
           - proyecto: proyecto-2/tarea-2-3-filtrar-logs
             entrada: '3\n5\n6\n'
-          - proyecto: proyecto-3
-            entrada: ""
+          - proyecto: proyecto-3/tarea-3-1-validacion
+            entrada: 'abc\n999\n1005\nBogota\nHaidian\n'
+          - proyecto: proyecto-3/tarea-3-2-gestion-dispositivos
+            entrada: '2\n1001\nHaidian\n2\n1002\nXicheng\n1\n4\n1002\nChaoyang\n5\nChaoyang\n3\n1001\n1\n6\n'
+          - proyecto: proyecto-3/tarea-3-3-analisis-csv
+            entrada: '1\n2\n3\n4\n'
+          - proyecto: proyecto-3/tarea-3-4-funcional
+            entrada: '1\n2\n3\n4\n'
           - proyecto: proyecto-4
             entrada: ""
     defaults:
@@ -84,7 +90,7 @@ jobs:
       - name: Build
         run: cjpm build
       - name: Run (con entrada simulada para los programas interactivos)
-        run: printf '${{ matrix.entrada }}' | cjpm run
+        run: printf '${{ matrix.entrada }}' | timeout 120 cjpm run
       - name: Test
         run: cjpm test
 

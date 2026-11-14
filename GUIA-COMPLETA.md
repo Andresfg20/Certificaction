@@ -10,12 +10,12 @@ Repositorio de evidencias de la certificación **Cangjie Programming** (Huawei T
 |---|---|---|
 | 1 · Setting Up The Work Environment | `hola-cjc`, `cjpmDemo`, `cangjie` | Tu código original (cjc vs cjpm) + prueba unitaria añadida a `cjpmDemo`. |
 | 2 · Log File Management | `tarea_2_1_consola`, `tarea_2_2_guardar_logs`, `tarea_2_3_filtrar_logs` | **Tu código del curso**: log por consola, guardado en `log.txt` con `try` con recursos, filtrado por nivel con sobrecarga y lambda final. |
-| 3 · System Data Analysis | `data_analysis` | CSV de CPU/memoria, estadísticas, media móvil y anomalías. |
+| 3 · System Data Analysis | `tarea_3_1_validacion`, `tarea_3_2_gestion_dispositivos`, `tarea_3_3_analisis_csv`, `tarea_3_4_funcional` | **Tu código del curso**: `enum` + `match`, `Option`, CRUD con `ArrayList`/`HashSet`, análisis del CSV de ventas y *pipeline* funcional con `\|>`. |
 | 4 · Business Function Optimization | `business_opt` | Strategy para descuentos, O(n²)→O(n) con HashSet, HashMap, memoización. |
 
 **Supuestos tomados**
 1. Lenguaje: **Cangjie** (SDK 1.2.1 instalado y validado en tu equipo) (detectado por `cjpm.toml`, `.cj` y la captura de Huawei Talent). Versión `cjc-version = "1.2.0"`, la de tu `cjpm.toml`.
-2. El proyecto 2 es tu código real del curso (13-nov-2026). Los proyectos 3–4 aún no los has hecho en la plataforma: su código es una **implementación de referencia** basada en el título de cada proyecto. Cuando completes cada proyecto en Huawei Talent, compara con las tareas reales y ajusta o reemplaza.
+2. Los proyectos 2 y 3 son tu código real del curso (13-nov-2026). El proyecto 4 aún no lo has hecho en la plataforma: su código es una **implementación de referencia** basada en el título de cada proyecto. Cuando completes cada proyecto en Huawei Talent, compara con las tareas reales y ajusta o reemplaza.
 3. **No se inventan** evidencias ni certificado: `01-proyecto-1.png` ya está; las demás capturas y `certificado.pdf` deben salir de tu cuenta real.
 4. Archivos de otros ecosistemas (`package.json`, `requirements.txt`, `pom.xml`, `build.gradle`, `.env.example`) **no aplican**: Cangjie usa `cjpm.toml` y no hay secretos ni variables de configuración. Crearlos sería ruido y confundiría al evaluador.
 5. Docker es opcional y está en `tools/docker/` para no ensuciar la raíz del repositorio semanal.
@@ -61,13 +61,13 @@ Repositorio de evidencias de la certificación **Cangjie Programming** (Huawei T
     │   ├── 00-ficha-del-curso.png    (incluido)
     │   ├── 01-proyecto-1.png         (incluido)
     │   ├── 02-proyecto-2.png         (incluido)
-    │   ├── 03-proyecto-3.png         (pendiente)
+    │   ├── 03-proyecto-3.png         (incluido)
     │   ├── 04-proyecto-4.png         (pendiente)
     │   └── 05-examen-final.png       (pendiente)
     └── codigo/
         ├── proyecto-1/ (README.md, hola-cjc/main.cj, cjpmDemo/, cangjie/)
         ├── proyecto-2/ (README.md, tarea-2-1-consola/, tarea-2-2-guardar-logs/, tarea-2-3-filtrar-logs/ + log.txt)
-        ├── proyecto-3/ (README.md, cjpm.toml, src/{muestras,estadisticas,main,estadisticas_test}.cj)
+        ├── proyecto-3/ (README.md, tarea-3-1-validacion/, tarea-3-2-gestion-dispositivos/, tarea-3-3-analisis-csv/ + CSV, tarea-3-4-funcional/ + CSV)
         └── proyecto-4/ (README.md, cjpm.toml, src/{descuentos,pedidos,optimizacion,main,negocio_test}.cj)
 ```
 
@@ -257,8 +257,14 @@ jobs:
             entrada: '1\n2\n3\n4\n5\n'
           - proyecto: proyecto-2/tarea-2-3-filtrar-logs
             entrada: '3\n5\n6\n'
-          - proyecto: proyecto-3
-            entrada: ""
+          - proyecto: proyecto-3/tarea-3-1-validacion
+            entrada: 'abc\n999\n1005\nBogota\nHaidian\n'
+          - proyecto: proyecto-3/tarea-3-2-gestion-dispositivos
+            entrada: '2\n1001\nHaidian\n2\n1002\nXicheng\n1\n4\n1002\nChaoyang\n5\nChaoyang\n3\n1001\n1\n6\n'
+          - proyecto: proyecto-3/tarea-3-3-analisis-csv
+            entrada: '1\n2\n3\n4\n'
+          - proyecto: proyecto-3/tarea-3-4-funcional
+            entrada: '1\n2\n3\n4\n'
           - proyecto: proyecto-4
             entrada: ""
     defaults:
@@ -292,7 +298,7 @@ jobs:
       - name: Build
         run: cjpm build
       - name: Run (con entrada simulada para los programas interactivos)
-        run: printf '${{ matrix.entrada }}' | cjpm run
+        run: printf '${{ matrix.entrada }}' | timeout 120 cjpm run
       - name: Test
         run: cjpm test
 
@@ -348,7 +354,7 @@ echo "== Proyectos de código =="
 for p in proyecto-1 proyecto-2 proyecto-3 proyecto-4; do
   if [ -d "$C/codigo/$p" ] && [ -n "$(ls -A "$C/codigo/$p" 2>/dev/null)" ]; then ok "codigo/$p"; else falta "codigo/$p (con contenido)"; fi
 done
-for t in proyecto-1/cjpmDemo proyecto-1/cangjie proyecto-2/tarea-2-1-consola proyecto-2/tarea-2-2-guardar-logs proyecto-2/tarea-2-3-filtrar-logs proyecto-3 proyecto-4; do
+for t in proyecto-1/cjpmDemo proyecto-1/cangjie proyecto-2/tarea-2-1-consola proyecto-2/tarea-2-2-guardar-logs proyecto-2/tarea-2-3-filtrar-logs proyecto-3/tarea-3-1-validacion proyecto-3/tarea-3-2-gestion-dispositivos proyecto-3/tarea-3-3-analisis-csv proyecto-3/tarea-3-4-funcional proyecto-4; do
   [ -f "$C/codigo/$t/cjpm.toml" ] && ok "codigo/$t/cjpm.toml" || falta "codigo/$t/cjpm.toml"
   [ -f "$C/codigo/$t/src/main.cj" ] && ok "codigo/$t/src/main.cj" || falta "codigo/$t/src/main.cj"
 done
@@ -394,13 +400,16 @@ PROYECTOS=(
   "proyecto-2/tarea-2-1-consola|Corhuila\n12\n35.5\nyes\n"
   "proyecto-2/tarea-2-2-guardar-logs|1\n2\n3\n4\n5\n"
   "proyecto-2/tarea-2-3-filtrar-logs|3\n5\n6\n"
-  "proyecto-3|"
+  "proyecto-3/tarea-3-1-validacion|abc\n999\n1005\nBogota\nHaidian\n"
+  "proyecto-3/tarea-3-2-gestion-dispositivos|2\n1001\nHaidian\n2\n1002\nXicheng\n1\n4\n1002\nChaoyang\n5\nChaoyang\n3\n1001\n1\n6\n"
+  "proyecto-3/tarea-3-3-analisis-csv|1\n2\n3\n4\n"
+  "proyecto-3/tarea-3-4-funcional|1\n2\n3\n4\n"
   "proyecto-4|"
 )
 for item in "${PROYECTOS[@]}"; do
   p="${item%%|*}"; entrada="${item#*|}"
   echo "==> $p"
-  ( cd "$COD/$p" && cjpm build && printf "$entrada" | cjpm run && cjpm test )
+  ( cd "$COD/$p" && cjpm build && printf "$entrada" | timeout 120 cjpm run && cjpm test )
 done
 echo "Todos los proyectos compilaron, ejecutaron y pasaron sus pruebas."
 ```
@@ -441,7 +450,10 @@ $Proyectos = [ordered]@{
     "proyecto-2\tarea-2-1-consola"       = "Corhuila`n12`n35.5`nyes"
     "proyecto-2\tarea-2-2-guardar-logs"  = "1`n2`n3`n4`n5"
     "proyecto-2\tarea-2-3-filtrar-logs"  = "3`n5`n6"
-    "proyecto-3"                         = ""
+    "proyecto-3\tarea-3-1-validacion" = "abc`n999`n1005`nBogota`nHaidian"
+    "proyecto-3\tarea-3-2-gestion-dispositivos" = "2`n1001`nHaidian`n2`n1002`nXicheng`n1`n4`n1002`nChaoyang`n5`nChaoyang`n3`n1001`n1`n6"
+    "proyecto-3\tarea-3-3-analisis-csv" = "1`n2`n3`n4"
+    "proyecto-3\tarea-3-4-funcional" = "1`n2`n3`n4"
     "proyecto-4"                         = ""
 }
 foreach ($p in $Proyectos.Keys) {
@@ -557,7 +569,7 @@ bash scripts/probar-todo.sh             # build + run + test (requiere Cangjie S
 |---|---|---|---|---|
 | 1. Setting Up The Work Environment | 11 de noviembre de 2026 | Aprendí que el SDK de Cangjie es el paquete con el compilador, las librerías y las herramientas necesarias para programar en el lenguaje, y que hay que configurarlo con las variables de entorno para que el sistema lo reconozca. Entendí la diferencia entre `cjc`, que compila un archivo suelto, y `cjpm`, que crea y gestiona proyectos completos con su archivo `cjpm.toml`. Vi qué hace un IDE (editar, compilar, depurar y organizar todo en un solo lugar) y cómo la relación entre lenguaje y compilador hace que los dos evolucionen juntos. Hice el entorno en macOS, que al ser un sistema Unix funciona casi igual que Linux. | [01-proyecto-1.png](evidencias/01-proyecto-1.png) | [codigo/proyecto-1](codigo/proyecto-1/) |
 | 2. Log File Management | 13 de noviembre de 2026 | Aprendí los tipos de datos básicos de Cangjie (enteros, decimales, booleanos y cadenas) y que hay que convertir los tipos explícitamente porque el lenguaje no mezcla tipos distintos en una operación. Practiqué leer datos de la consola y escribir logs en un archivo, usando `try` con recursos para que el archivo se cierre solo y `catch` para manejar errores como una entrada inválida. Usé `if`, `while` y `for-in` para armar menús que se repiten hasta que el usuario elige salir. Vi cómo definir funciones, sobrecargarlas (mismo nombre, distintos parámetros) y pasarles una lambda como último argumento para filtrar los logs por nivel. | [02-proyecto-2.png](evidencias/02-proyecto-2.png) | [codigo/proyecto-2](codigo/proyecto-2/) |
-| 3. System Data Analysis | *(pendiente)* | *(pendiente)* | [03-proyecto-3.png](evidencias/03-proyecto-3.png) | [codigo/proyecto-3](codigo/proyecto-3/) |
+| 3. System Data Analysis | 13 de noviembre de 2026 | Aprendí a usar `enum` para limitar los valores posibles (como los distritos válidos) y `match` para cubrir todos los casos, algo más seguro que un `switch`. Entendí que `Option` (`?Int64`) reemplaza al `null` y obliga a decidir qué hacer cuando no hay valor, con `match`, `if-let` o `??`. Practiqué las colecciones (`Array`, `ArrayList`, `HashSet`, `HashMap`) y las tuplas para administrar una lista de dispositivos sin IDs repetidos. Leí un archivo CSV línea por línea, limpié los pagos fallidos y agrupé las ventas por región, producto y mes. Por último usé funciones de orden superior y el operador `\|>` para encadenar los pasos del análisis. | [03-proyecto-3.png](evidencias/03-proyecto-3.png) | [codigo/proyecto-3](codigo/proyecto-3/) |
 | 4. Business Function Optimization | *(pendiente)* | *(pendiente)* | [04-proyecto-4.png](evidencias/04-proyecto-4.png) | [codigo/proyecto-4](codigo/proyecto-4/) |
 | Examen final | *(pendiente)* | *(pendiente)* | [05-examen-final.png](evidencias/05-examen-final.png) | — |
 
@@ -577,7 +589,7 @@ certification/
 └── codigo/
     ├── proyecto-1/   # hola-cjc (cjc), cjpmDemo y cangjie (cjpm)
     ├── proyecto-2/   # tareas 2.1 consola, 2.2 guardar logs, 2.3 filtrar logs
-    ├── proyecto-3/   # data_analysis: estadísticas y anomalías de CPU/memoria
+    ├── proyecto-3/   # tareas 3.1 validación, 3.2 dispositivos, 3.3 CSV, 3.4 funcional
     └── proyecto-4/   # business_opt: Strategy, HashSet/HashMap, memoización
 ```
 
@@ -597,7 +609,7 @@ Requisito: Cangjie SDK instalado y `cjc -v` respondiendo en la terminal.
 bash scripts/probar-todo.sh
 
 # Un proyecto concreto
-cd certification/codigo/proyecto-3
+cd certification/codigo/proyecto-4
 cjpm build && cjpm run && cjpm test
 ```
 
@@ -1010,32 +1022,46 @@ main(): Int64 {
 ````markdown
 # Proyecto 3 · System Data Analysis
 
-Análisis de muestras de monitoreo (CPU y memoria en %) leídas desde CSV:
-mínimo, máximo, promedio, mediana, desviación estándar, media móvil y detección de anomalías por umbral.
+Código desarrollado en las tareas del curso: registro y gestión de máquinas expendedoras y análisis de sus ventas. Cada tarea es un proyecto `cjpm` independiente.
 
-| Archivo | Responsabilidad |
-|---|---|
-| `src/muestras.cj` | `struct Muestra`, `parsearCsv()` con validación, extracción de columnas. |
-| `src/estadisticas.cj` | Funciones estadísticas puras + ordenamiento por inserción. |
-| `src/main.cj` | Reporte con datos de ejemplo (incluye una fila inválida a propósito). |
-| `src/estadisticas_test.cj` | Pruebas unitarias, incluidas las de excepciones. |
+| Tarea | Carpeta | Qué hace | Conceptos |
+|---|---|---|---|
+| 3.1 Validación de datos | `tarea-3-1-validacion/` | Pide el ID de una máquina (1001–1100) y su distrito, y repite la pregunta hasta que el dato sea válido. | `enum` con método `toString`, `match` exhaustivo, `Option` con `??`, `try / catch` y `throw`. |
+| 3.2 Gestión de dispositivos | `tarea-3-2-gestion-dispositivos/` | Menú CRUD: imprimir, agregar (sin IDs repetidos), eliminar, modificar y consultar por zona. | `ArrayList` de tuplas `(Int64, String)`, `HashSet` para unicidad, `remove(at:)`. |
+| 3.3 Análisis del CSV | `tarea-3-3-analisis-csv/` | Lee `smart_retail_sales.csv`, muestra registros, limpia los pagos fallidos y agrupa las ventas por región con barras. | `File.readFrom`, `ByteBuffer` + `StringReader`, alias `type`, parámetros con nombre y valor por defecto, `sort` con comparador. |
+| 3.4 Análisis funcional | `tarea-3-4-funcional/` | Lee el CSV en flujo y agrupa las ventas por región, producto o mes con un *pipeline*. | Funciones de orden superior, lambdas guardadas en variables, `filter`, operador `\|>`, `try` con recursos. |
 
-Conceptos de Cangjie: `Array` vs `ArrayList`, `Float64`, `std.math`, `std.convert` (`Int64.tryParse`), tuplas en `match`, excepciones.
+## Ejecutar
 
 ```bash
-cjpm build
-cjpm run
-cjpm test
+cd tarea-3-1-validacion && cjpm run
+cd ../tarea-3-2-gestion-dispositivos && cjpm run
+cd ../tarea-3-3-analisis-csv && cjpm run     # usa smart_retail_sales.csv de su carpeta
+cd ../tarea-3-4-funcional && cjpm run
 ```
+
+Ejecución no interactiva (la usa el CI):
+
+```bash
+printf 'abc\n999\n1005\nBogota\nHaidian\n' | cjpm run                    # 3.1: prueba entradas inválidas
+printf '2\n1001\nHaidian\n2\n1002\nXicheng\n1\n4\n1002\nChaoyang\n5\nChaoyang\n3\n1001\n1\n6\n' | cjpm run   # 3.2
+printf '1\n2\n3\n4\n' | cjpm run                                       # 3.3 y 3.4
+```
+
+## Ajustes hechos para el SDK 1.2.1
+
+- `name` en `cjpm.toml` sin guiones (`tarea_3_1_validacion`, …) y primera línea `package <nombre>` en cada `main.cj`.
+- Tarea 3.3: el CSV se llamaba `" smart_retail_sales.csv"` (con un espacio al inicio) y el programa busca `smart_retail_sales.csv`; se renombró.
+- Tarea 3.4: error de compilación `expected 'Bool', found 'Unit'` en `readTradeFile`. Un `try` con recursos es de tipo `Unit`, así que se agregó `return false` al final de la función. La lógica no cambia.
 ````
 
-## `certification/codigo/proyecto-3/cjpm.toml`
+## `certification/codigo/proyecto-3/tarea-3-1-validacion/cjpm.toml`
 
 ```toml
 [package]
   cjc-version = "1.2.0"
-  name = "data_analysis"
-  description = "Proyecto 3 - System Data Analysis: estadísticas y anomalías de CPU y memoria"
+  name = "tarea_3_1_validacion"
+  description = "Proyecto 3 - System Data Analysis"
   version = "1.0.0"
   target-dir = ""
   src-dir = ""
@@ -1050,328 +1076,634 @@ cjpm test
 [test-dependencies]
 ```
 
-## `certification/codigo/proyecto-3/src/estadisticas.cj`
+## `certification/codigo/proyecto-3/tarea-3-1-validacion/src/main.cj`
 
 ```swift
-package data_analysis
+package tarea_3_1_validacion
 
-import std.collection.*
-import std.math.*
+import std.env.*
+import std.convert.*
 
-// Funciones estadísticas puras sobre series de enteros (porcentajes 0-100).
-// Todas validan la entrada y lanzan IllegalArgumentException si la serie está vacía.
+// Enum con los únicos distritos permitidos
+enum District {
+    | Dongcheng
+    | Xicheng
+    | Haidian
+    | Chaoyang
+    | Fengtai
 
-func validarNoVacio(valores: Array<Int64>): Unit {
-    if (valores.size == 0) {
-        throw IllegalArgumentException("La serie de datos no puede estar vacía")
-    }
-}
-
-public func minimo(valores: Array<Int64>): Int64 {
-    validarNoVacio(valores)
-    var m = valores[0]
-    for (v in valores) {
-        if (v < m) {
-            m = v
+    func toString(): String {
+        match (this) {
+            case District.Dongcheng => "Dongcheng District"
+            case District.Xicheng => "Xicheng District"
+            case District.Haidian => "Haidian District"
+            case District.Chaoyang => "Chaoyang District"
+            case District.Fengtai => "Fengtai District"
         }
     }
-    return m
 }
 
-public func maximo(valores: Array<Int64>): Int64 {
-    validarNoVacio(valores)
-    var m = valores[0]
-    for (v in valores) {
-        if (v > m) {
-            m = v
+// Pide el ID hasta que sea un entero entre 1001 y 1100
+func inputDeviceID(): Int64 {
+    var id: Int64 = 0
+    while (true) {
+        print("Ingrese el ID de la máquina (1001~1100): ")
+        let input = getStdIn().readln() ?? ""
+        try {
+            let temp = Int64.parse(input)
+            if (temp > 1100 || temp < 1001) {
+                throw Exception("ID fuera de rango, intente de nuevo")
+            }
+            id = temp
+            break
+        } catch (e: Exception) {
+            println("Error: ${e}")
         }
     }
-    return m
+    return id
 }
 
-public func promedio(valores: Array<Int64>): Float64 {
-    validarNoVacio(valores)
-    var suma: Int64 = 0
-    for (v in valores) {
-        suma += v
-    }
-    return Float64(suma) / Float64(valores.size)
-}
-
-public func desviacionEstandar(valores: Array<Int64>): Float64 {
-    let media = promedio(valores)
-    var acumulado: Float64 = 0.0
-    for (v in valores) {
-        let d = Float64(v) - media
-        acumulado += d * d
-    }
-    return sqrt(acumulado / Float64(valores.size))
-}
-
-// Ordenamiento por inserción sobre una copia: no modifica la serie original.
-public func ordenar(valores: Array<Int64>): Array<Int64> {
-    let copia = valores.clone()
-    var i: Int64 = 1
-    while (i < copia.size) {
-        let actual = copia[i]
-        var j = i - 1
-        while (j >= 0 && copia[j] > actual) {
-            copia[j + 1] = copia[j]
-            j -= 1
+// Pide el distrito hasta que coincida con uno de los permitidos
+func inputDistrict(): District {
+    while (true) {
+        print("Ingrese el distrito (Dongcheng, Xicheng, Haidian, Chaoyang, Fengtai): ")
+        let input = getStdIn().readln() ?? ""
+        match (input) {
+            case "Dongcheng" => return District.Dongcheng
+            case "Xicheng" => return District.Xicheng
+            case "Haidian" => return District.Haidian
+            case "Chaoyang" => return District.Chaoyang
+            case "Fengtai" => return District.Fengtai
+            case _ => println("Distrito inválido, intente de nuevo")
         }
-        copia[j + 1] = actual
-        i += 1
     }
-    return copia
-}
-
-public func mediana(valores: Array<Int64>): Float64 {
-    validarNoVacio(valores)
-    let o = ordenar(valores)
-    let n = o.size
-    if (n % 2 == 1) {
-        return Float64(o[n / 2])
-    }
-    return Float64(o[n / 2 - 1] + o[n / 2]) / 2.0
-}
-
-// Media móvil simple con ventana fija; devuelve n - ventana + 1 valores.
-public func mediaMovil(valores: Array<Int64>, ventana: Int64): ArrayList<Float64> {
-    if (ventana <= 0 || ventana > valores.size) {
-        throw IllegalArgumentException("Ventana inválida: ${ventana}")
-    }
-    let r = ArrayList<Float64>()
-    var suma: Int64 = 0
-    var i: Int64 = 0
-    while (i < valores.size) {
-        suma += valores[i]
-        if (i >= ventana) {
-            suma -= valores[i - ventana]
-        }
-        if (i >= ventana - 1) {
-            r.add(Float64(suma) / Float64(ventana))
-        }
-        i += 1
-    }
-    return r
-}
-
-// Índices de las muestras que superan el umbral.
-public func anomalias(valores: Array<Int64>, umbral: Int64): ArrayList<Int64> {
-    let r = ArrayList<Int64>()
-    var i: Int64 = 0
-    while (i < valores.size) {
-        if (valores[i] > umbral) {
-            r.add(i)
-        }
-        i += 1
-    }
-    return r
-}
-```
-
-## `certification/codigo/proyecto-3/src/estadisticas_test.cj`
-
-```swift
-package data_analysis
-
-import std.unittest.*
-import std.unittest.testmacro.*
-import std.math.*
-
-func casiIgual(a: Float64, b: Float64): Bool {
-    return abs(a - b) < 0.0001
-}
-
-@Test
-class EstadisticasTest {
-    let serie: Array<Int64> = [10, 40, 20, 30]
-
-    @TestCase
-    func minimoYMaximo(): Unit {
-        @Expect(minimo(serie), 10)
-        @Expect(maximo(serie), 40)
-    }
-
-    @TestCase
-    func promedioYMediana(): Unit {
-        @Expect(casiIgual(promedio(serie), 25.0), true)
-        @Expect(casiIgual(mediana(serie), 25.0), true)
-        @Expect(casiIgual(mediana([5, 1, 3]), 3.0), true)
-    }
-
-    @TestCase
-    func desviacion(): Unit {
-        // Población: sqrt(((15^2)+(15^2)+(5^2)+(5^2))/4) = sqrt(125)
-        @Expect(casiIgual(desviacionEstandar(serie), sqrt(125.0)), true)
-    }
-
-    @TestCase
-    func ordenarNoModificaOriginal(): Unit {
-        let o = ordenar(serie)
-        @Expect(o[0], 10)
-        @Expect(o[3], 40)
-        @Expect(serie[1], 40)
-    }
-
-    @TestCase
-    func mediaMovilVentana2(): Unit {
-        let m = mediaMovil(serie, 2)
-        @Expect(m.size, 3)
-        @Expect(casiIgual(m[0], 25.0), true)
-        @Expect(casiIgual(m[2], 25.0), true)
-    }
-
-    @TestCase
-    func detectaAnomalias(): Unit {
-        let a = anomalias(serie, 25)
-        @Expect(a.size, 2)
-        @Expect(a[0], 1)
-        @Expect(a[1], 3)
-    }
-
-    @TestCase
-    func serieVaciaLanzaExcepcion(): Unit {
-        let vacia: Array<Int64> = []
-        @ExpectThrows[IllegalArgumentException](minimo(vacia))
-        @ExpectThrows[IllegalArgumentException](mediaMovil(serie, 0))
-    }
-}
-
-@Test
-class CsvTest {
-    @TestCase
-    func descartaFilasInvalidas(): Unit {
-        let m = parsearCsv("hora,cpu,memoria\n08:00,10,20\n08:05,x,20\n08:10,150,20\n08:15,30\n08:20,40,50\r\n")
-        @Expect(m.size, 2)
-        @Expect(m[1].hora, "08:20")
-        @Expect(columnaCpu(m)[1], 40)
-        @Expect(columnaMemoria(m)[0], 20)
-    }
-}
-```
-
-## `certification/codigo/proyecto-3/src/main.cj`
-
-```swift
-package data_analysis
-
-// Proyecto 3 · System Data Analysis
-
-let CSV_DE_EJEMPLO: String = """
-hora,cpu,memoria
-08:00,35,60
-08:05,42,61
-08:10,38,63
-08:15,91,70
-08:20,47,72
-08:25,55,74
-08:30,95,88
-08:35,40,76
-08:40,abc,70
-08:45,36,65
-"""
-
-let UMBRAL_CPU: Int64 = 90
-let UMBRAL_MEMORIA: Int64 = 85
-
-func reportar(nombre: String, serie: Array<Int64>): Unit {
-    println("--- ${nombre} ---")
-    println("Mínimo: ${minimo(serie)} %")
-    println("Máximo: ${maximo(serie)} %")
-    println("Promedio: ${promedio(serie)} %")
-    println("Mediana: ${mediana(serie)} %")
-    println("Desviación estándar: ${desviacionEstandar(serie)}")
+    return District.Dongcheng
 }
 
 main(): Int64 {
-    let muestras = parsearCsv(CSV_DE_EJEMPLO)
-    println("Muestras válidas: ${muestras.size}")
+    println("========== Registro de máquina expendedora ==========")
+    let id = inputDeviceID()
+    let district = inputDistrict()
+    println("ID: ${id}, Ubicación: ${district.toString()}")
+    return 0
+}
+```
 
-    let cpu = columnaCpu(muestras)
-    let mem = columnaMemoria(muestras)
-    reportar("CPU", cpu)
-    reportar("Memoria", mem)
+## `certification/codigo/proyecto-3/tarea-3-2-gestion-dispositivos/cjpm.toml`
 
-    println("\n--- Media móvil de CPU (ventana 3) ---")
-    for (v in mediaMovil(cpu, 3)) {
-        println(v)
+```toml
+[package]
+  cjc-version = "1.2.0"
+  name = "tarea_3_2_gestion_dispositivos"
+  description = "Proyecto 3 - System Data Analysis"
+  version = "1.0.0"
+  target-dir = ""
+  src-dir = ""
+  output-type = "executable"
+  compile-option = ""
+  override-compile-option = ""
+  link-option = ""
+  package-configuration = {}
+
+[dependencies]
+
+[test-dependencies]
+```
+
+## `certification/codigo/proyecto-3/tarea-3-2-gestion-dispositivos/src/main.cj`
+
+```swift
+package tarea_3_2_gestion_dispositivos
+
+import std.collection.*
+import std.env.*
+import std.convert.*
+
+enum District {
+    | Dongcheng
+    | Xicheng
+    | Haidian
+    | Chaoyang
+    | Fengtai
+
+    func toString(): String {
+        match (this) {
+            case District.Dongcheng => "Dongcheng District"
+            case District.Xicheng => "Xicheng District"
+            case District.Haidian => "Haidian District"
+            case District.Chaoyang => "Chaoyang District"
+            case District.Fengtai => "Fengtai District"
+        }
     }
+}
 
-    println("\n--- Alertas ---")
-    for (i in anomalias(cpu, UMBRAL_CPU)) {
-        println("CPU alta a las ${muestras[i].hora}: ${cpu[i]} %")
+func inputDeviceID(): Int64 {
+    var id: Int64 = 0
+    while (true) {
+        print("Ingrese el ID de la máquina (1001~1100): ")
+        let input = getStdIn().readln() ?? ""
+        try {
+            let temp = Int64.parse(input)
+            if (temp > 1100 || temp < 1001) {
+                throw Exception("ID fuera de rango, intente de nuevo")
+            }
+            id = temp
+            break
+        } catch (e: Exception) {
+            println("Error: ${e}")
+        }
     }
-    for (i in anomalias(mem, UMBRAL_MEMORIA)) {
-        println("Memoria alta a las ${muestras[i].hora}: ${mem[i]} %")
+    return id
+}
+
+func inputDistrict(): District {
+    while (true) {
+        print("Ingrese el distrito (Dongcheng, Xicheng, Haidian, Chaoyang, Fengtai): ")
+        let input = getStdIn().readln() ?? ""
+        match (input) {
+            case "Dongcheng" => return District.Dongcheng
+            case "Xicheng" => return District.Xicheng
+            case "Haidian" => return District.Haidian
+            case "Chaoyang" => return District.Chaoyang
+            case "Fengtai" => return District.Fengtai
+            case _ => println("Distrito inválido, intente de nuevo")
+        }
+    }
+    return District.Dongcheng
+}
+
+// Lista de dispositivos (ID, ubicación) y conjunto de IDs para garantizar unicidad
+let devices = ArrayList<(Int64, String)>()
+let deviceIDs = HashSet<Int64>()
+
+func printDevices() {
+    println("Total de dispositivos: ${devices.size}")
+    for (device in devices) {
+        println("ID: ${device[0]}, Ubicación: ${device[1]}")
+    }
+}
+
+func addDevice() {
+    var id = inputDeviceID()
+    while (deviceIDs.contains(id)) {
+        println("ID repetido, ingrese otro")
+        id = inputDeviceID()
+    }
+    deviceIDs.add(id)
+    let location = inputDistrict().toString()
+    devices.add((id, location))
+    println("Registro exitoso, ID: ${id}, ${location}")
+}
+
+func deleteDevice() {
+    let id = inputDeviceID()
+    for (i in 0..devices.size) {
+        if (devices[i][0] == id) {
+            devices.remove(at: i)
+            deviceIDs.remove(id)
+            println("Dispositivo ${id} eliminado")
+            return
+        }
+    }
+    println("El dispositivo ${id} no existe")
+}
+
+func updateDevice() {
+    let id = inputDeviceID()
+    for (i in 0..devices.size) {
+        if (devices[i][0] == id) {
+            let district = inputDistrict().toString()
+            devices[i] = (id, district)
+            println("Ubicación actualizada: ${id} -> ${district}")
+            return
+        }
+    }
+    println("El dispositivo ${id} no existe")
+}
+
+func queryByDistrict() {
+    let district = inputDistrict().toString()
+    var num: Int64 = 0
+    for (device in devices) {
+        if (device[1] == district) {
+            println("ID: ${device[0]}, Ubicación: ${device[1]}")
+            num++
+        }
+    }
+    if (num == 0) {
+        println("Aún no hay dispositivos en ${district}")
+    } else {
+        println("Total en ${district}: ${num}")
+    }
+}
+
+main(): Int64 {
+    println("========== Gestión de máquinas expendedoras ==========")
+    while (true) {
+        println("Menú: [1] Imprimir [2] Agregar [3] Eliminar [4] Modificar [5] Consultar (zona) [6] Salir")
+        let order = getStdIn().readln() ?? ""
+        match (order) {
+            case "1" => printDevices()
+            case "2" => addDevice()
+            case "3" => deleteDevice()
+            case "4" => updateDevice()
+            case "5" => queryByDistrict()
+            case "6" => break
+            case _ => println("Comando inválido, intente de nuevo")
+        }
     }
     return 0
 }
 ```
 
-## `certification/codigo/proyecto-3/src/muestras.cj`
+## `certification/codigo/proyecto-3/tarea-3-3-analisis-csv/cjpm.toml`
+
+```toml
+[package]
+  cjc-version = "1.2.0"
+  name = "tarea_3_3_analisis_csv"
+  description = "Proyecto 3 - System Data Analysis"
+  version = "1.0.0"
+  target-dir = ""
+  src-dir = ""
+  output-type = "executable"
+  compile-option = ""
+  override-compile-option = ""
+  link-option = ""
+  package-configuration = {}
+
+[dependencies]
+
+[test-dependencies]
+```
+
+## `certification/codigo/proyecto-3/tarea-3-3-analisis-csv/smart_retail_sales.csv`
+
+```csv
+date,machineId,region,timestamp,productId,productName,price,quantity,total,status
+2025-05-03,1001,Haidian District,09:15:22,P01,Cola,3.50,2,7.00,Success
+2025-05-03,1002,Dongcheng District,10:02:10,P02,Chips,5.00,1,5.00,Success
+2025-05-04,1003,Haidian District,11:45:00,P03,Water,2.00,3,6.00,Failed
+2025-05-04,1004,Xicheng District,12:30:41,P01,Cola,3.50,4,14.00,Success
+2025-06-01,1005,Chaoyang District,08:20:05,P04,Juice,6.00,2,12.00,Success
+2025-06-01,1006,Fengtai District,14:10:33,P02,Chips,5.00,5,25.00,Success
+2025-06-02,1002,Dongcheng District,15:55:12,P03,Water,2.00,6,12.00,Success
+2025-06-02,1001,Haidian District,16:40:48,P04,Juice,6.00,1,6.00,Failed
+2025-07-10,1004,Xicheng District,09:05:19,P01,Cola,3.50,3,10.50,Success
+2025-07-10,1005,Chaoyang District,13:25:50,P02,Chips,5.00,2,10.00,Success
+```
+
+## `certification/codigo/proyecto-3/tarea-3-3-analisis-csv/src/main.cj`
 
 ```swift
-package data_analysis
+package tarea_3_3_analisis_csv
 
 import std.collection.*
+import std.env.*
 import std.convert.*
+import std.time.*
+import std.fs.*
+import std.io.*
+import std.sort.*
 
-// Una muestra de monitoreo del sistema tomada en una hora concreta.
-public struct Muestra {
-    public let hora: String
-    public let cpu: Int64
-    public let memoria: Int64
+// fecha, id máquina, región, hora, id producto, producto, precio, cantidad, total, pago exitoso
+type TradeType = (String, Int64, String, String, String, String, Float64, Int64, Float64, Bool)
 
-    public init(hora: String, cpu: Int64, memoria: Int64) {
-        this.hora = hora
-        this.cpu = cpu
-        this.memoria = memoria
+let rawdata = ArrayList<TradeType>()   // datos crudos
+let trades = ArrayList<TradeType>()    // datos limpios
+
+func safeParseInt64(str: String, defaultValue!: Int64 = 0): Int64 {
+    try {
+        Int64.parse(str)
+    } catch (e: Exception) {
+        defaultValue
     }
 }
 
-func aEntero(texto: String): Option<Int64> {
-    return Int64.tryParse(texto.trimAscii())
+func safeParseFloat64(str: String, defaultValue!: Float64 = 0.0): Float64 {
+    try {
+        Float64.parse(str)
+    } catch (e: Exception) {
+        defaultValue
+    }
 }
 
-// Interpreta CSV "hora,cpu,memoria". Ignora la cabecera, líneas vacías y
-// filas con valores no numéricos o fuera del rango 0-100.
-public func parsearCsv(texto: String): ArrayList<Muestra> {
-    let r = ArrayList<Muestra>()
-    for (linea in texto.split("\n")) {
-        let l = linea.trimAscii()
-        if (l.isEmpty() || l.startsWith("hora")) {
-            continue
+// Convierte los bytes del CSV en registros, línea por línea
+func parseLine(bytes: Array<Byte>): Int64 {
+    let stream = ByteBuffer()
+    stream.write(bytes)
+    let reader = StringReader(stream)
+    if (reader.readln().isNone()) {   // salta el encabezado
+        return 0
+    }
+    var count: Int64 = 0
+    var line = reader.readln()
+    while (line.isSome()) {
+        try {
+            let fields = line.getOrThrow().split(",")
+            if (fields.size < 10) {
+                throw Exception("Campos insuficientes")
+            }
+            let id = safeParseInt64(fields[1])
+            let price = safeParseFloat64(fields[6])
+            let num = safeParseInt64(fields[7])
+            let total = safeParseFloat64(fields[8])
+            let status = fields[9].contains("Success")
+            rawdata.add((fields[0], id, fields[2], fields[3], fields[4], fields[5], price, num, total, status))
+            count++
+        } catch (e: Exception) {
+            println("Error en una fila: ${e}")
         }
-        let c = l.split(",")
-        if (c.size != 3) {
-            continue
-        }
-        match ((aEntero(c[1]), aEntero(c[2]))) {
-            case (Some(cpu), Some(mem)) =>
-                if (cpu >= 0 && cpu <= 100 && mem >= 0 && mem <= 100) {
-                    r.add(Muestra(c[0].trimAscii(), cpu, mem))
-                }
-            case _ => ()
-        }
+        line = reader.readln()
     }
-    return r
+    return count
 }
 
-public func columnaCpu(muestras: ArrayList<Muestra>): Array<Int64> {
-    let r = ArrayList<Int64>()
-    for (m in muestras) {
-        r.add(m.cpu)
+func readTradeFile(filename: String): Bool {
+    try {
+        let bytes = File.readFrom(filename)
+        let start = DateTime.now()
+        let count = parseLine(bytes)
+        let used = DateTime.now() - start
+        println("Se procesaron ${count} registros en ${used}")
+        return true
+    } catch (e: Exception) {
+        println("No se pudo leer el archivo: ${e}")
+        return false
     }
-    return r.toArray()
 }
 
-public func columnaMemoria(muestras: ArrayList<Muestra>): Array<Int64> {
-    let r = ArrayList<Int64>()
-    for (m in muestras) {
-        r.add(m.memoria)
+// [1] Muestra los primeros 5 registros
+func showSomeData() {
+    println("Fecha\tID\tRegión\tHora\tProd.ID\tProducto\tPrecio\tCant.\tTotal\tPago")
+    let n = if (rawdata.size < 5) { rawdata.size } else { 5 }
+    for (i in 0..n) {
+        let r = rawdata[i]
+        println("${r[0]}\t${r[1]}\t${r[2]}\t${r[3]}\t${r[4]}\t${r[5]}\t${r[6].format(".2")}\t${r[7]}\t${r[8].format(".2")}\t${r[9]}")
     }
-    return r.toArray()
+}
+
+// [2] Limpieza: deja solo los pagos exitosos
+func filterByPayStatus() {
+    trades.clear()
+    var success: Int64 = 0
+    var failed: Int64 = 0
+    for (data in rawdata) {
+        if (data[9]) {
+            success++
+            trades.add(data)
+        } else {
+            failed++
+        }
+    }
+    println("Total: ${rawdata.size} Exitosas: ${success} Fallidas: ${failed}")
+}
+
+// Suma cantidad y monto por región
+func tradesByLocation(): ArrayList<(String, Int64, Float64)> {
+    let result = ArrayList<(String, Int64, Float64)>()
+    for (trade in trades) {
+        var found = false
+        for (i in 0..result.size) {
+            if (result[i][0] == trade[2]) {
+                result[i] = (result[i][0], result[i][1] + trade[7], result[i][2] + trade[8])
+                found = true
+            }
+        }
+        if (!found) {
+            result.add((trade[2], trade[7], trade[8]))
+        }
+    }
+    return result
+}
+
+// [3] Estadística por región, de mayor a menor monto, con barras
+func analysisByLocation() {
+    if (trades.size == 0) {
+        println("Primero haga la limpieza de datos (opción 2)\n")
+        return
+    }
+    let stats = tradesByLocation()
+    // LT = "a va antes que b": así queda de mayor a menor
+    sort<(String, Int64, Float64)>(stats, by: {a, b =>
+        if (a[2] > b[2]) { Ordering.LT } else if (a[2] < b[2]) { Ordering.GT } else { Ordering.EQ }
+    }, stable: true)
+    println("========== Ventas por región ==========")
+    let maxTotal = stats[0][2]   // el primero es el mayor
+    for (s in stats) {
+        let length = Int64(s[2] / maxTotal * 40.0)
+        println("${s[0]} Cantidad: ${s[1]} Total: ${s[2].format(".2")} RMB")
+        println("|" * length)
+    }
+}
+
+main(): Int64 {
+    let csvFilename = "./smart_retail_sales.csv"
+    if (!readTradeFile(csvFilename)) {
+        println("Falló la lectura de datos.")
+        return 1
+    }
+    println("Lectura exitosa, registros: ${rawdata.size}")
+    while (true) {
+        println("========== Procesamiento por lotes ==========")
+        println("Menú: [1] Mostrar datos [2] Limpiar datos [3] Estadística por región [4] Salir")
+        let order = getStdIn().readln() ?? ""
+        match (order) {
+            case "1" => showSomeData()
+            case "2" => filterByPayStatus()
+            case "3" => analysisByLocation()
+            case "4" => break
+            case _ => println("Comando inválido, intente de nuevo")
+        }
+    }
+    return 0
+}
+```
+
+## `certification/codigo/proyecto-3/tarea-3-4-funcional/cjpm.toml`
+
+```toml
+[package]
+  cjc-version = "1.2.0"
+  name = "tarea_3_4_funcional"
+  description = "Proyecto 3 - System Data Analysis"
+  version = "1.0.0"
+  target-dir = ""
+  src-dir = ""
+  output-type = "executable"
+  compile-option = ""
+  override-compile-option = ""
+  link-option = ""
+  package-configuration = {}
+
+[dependencies]
+
+[test-dependencies]
+```
+
+## `certification/codigo/proyecto-3/tarea-3-4-funcional/smart_retail_sales.csv`
+
+```csv
+date,machineId,region,timestamp,productId,productName,price,quantity,total,status
+2025-05-03,1001,Haidian District,09:15:22,P01,Cola,3.50,2,7.00,Success
+2025-05-03,1002,Dongcheng District,10:02:10,P02,Chips,5.00,1,5.00,Success
+2025-05-04,1003,Haidian District,11:45:00,P03,Water,2.00,3,6.00,Failed
+2025-05-04,1004,Xicheng District,12:30:41,P01,Cola,3.50,4,14.00,Success
+2025-06-01,1005,Chaoyang District,08:20:05,P04,Juice,6.00,2,12.00,Success
+2025-06-01,1006,Fengtai District,14:10:33,P02,Chips,5.00,5,25.00,Success
+2025-06-02,1002,Dongcheng District,15:55:12,P03,Water,2.00,6,12.00,Success
+2025-06-02,1001,Haidian District,16:40:48,P04,Juice,6.00,1,6.00,Failed
+2025-07-10,1004,Xicheng District,09:05:19,P01,Cola,3.50,3,10.50,Success
+2025-07-10,1005,Chaoyang District,13:25:50,P02,Chips,5.00,2,10.00,Success
+```
+
+## `certification/codigo/proyecto-3/tarea-3-4-funcional/src/main.cj`
+
+```swift
+package tarea_3_4_funcional
+
+import std.collection.*
+import std.env.*
+import std.convert.*
+import std.time.*
+import std.fs.*
+import std.io.*
+import std.sort.*
+
+type TradeType = (String, Int64, String, String, String, String, Float64, Int64, Float64, Bool)
+
+let rawdata = ArrayList<TradeType>()
+
+func safeParseInt64(str: String, defaultValue!: Int64 = 0): Int64 {
+    try {
+        Int64.parse(str)
+    } catch (e: Exception) {
+        defaultValue
+    }
+}
+
+func safeParseFloat64(str: String, defaultValue!: Float64 = 0.0): Float64 {
+    try {
+        Float64.parse(str)
+    } catch (e: Exception) {
+        defaultValue
+    }
+}
+
+// Lectura en flujo: no carga todo el archivo en memoria
+func parseLine(reader: StringReader<File>): Unit {
+    var line = reader.readln()
+    while (line.isSome()) {
+        try {
+            let fields = line.getOrThrow().split(",")
+            if (fields.size < 10) {
+                throw Exception("Campos insuficientes")
+            }
+            rawdata.add((fields[0], safeParseInt64(fields[1]), fields[2], fields[3], fields[4], fields[5],
+                safeParseFloat64(fields[6]), safeParseInt64(fields[7]), safeParseFloat64(fields[8]),
+                fields[9].contains("Success")))
+        } catch (e: Exception) {
+            println("Error en una fila: ${e}")
+        }
+        line = reader.readln()
+    }
+}
+
+func readTradeFile(filename: String): Bool {
+    try (fileStream = File(filename, OpenMode.Read)) {
+        let start = DateTime.now()
+        println("Leyendo archivo...")
+        let reader = StringReader(fileStream)
+        if (reader.readln().isNone()) {   // encabezado
+            return false
+        }
+        parseLine(reader)
+        let used = DateTime.now() - start
+        println("Se procesaron ${rawdata.size} registros en ${used}")
+        return true
+    } catch (e: Exception) {
+        println("No se pudo leer el archivo: ${e}")
+        return false
+    }
+    // try con recursos es de tipo Unit: el return final le da a la función su tipo Bool
+    return false
+}
+
+// Limpieza: solo transacciones con pago exitoso
+let tradeSuccessFilter = filter<TradeType>({ trade => trade[9] })
+
+// Suma cantidad y monto agrupando por la clave que entregue keyOf
+func aggregate(trades: Iterator<TradeType>, keyOf: (TradeType) -> String): ArrayList<(String, Int64, Float64)> {
+    let result = ArrayList<(String, Int64, Float64)>()
+    for (trade in trades) {
+        let key = keyOf(trade)
+        var found = false
+        for (i in 0..result.size) {
+            if (result[i][0] == key) {
+                result[i] = (key, result[i][1] + trade[7], result[i][2] + trade[8])
+                found = true
+            }
+        }
+        if (!found) {
+            result.add((key, trade[7], trade[8]))
+        }
+    }
+    return result
+}
+
+let analysisByLocation: (Iterator<TradeType>) -> ArrayList<(String, Int64, Float64)> = { trades =>
+    aggregate(trades, { t => t[2] })
+}
+
+let analysisByGood: (Iterator<TradeType>) -> ArrayList<(String, Int64, Float64)> = { trades =>
+    aggregate(trades, { t => t[5] })
+}
+
+// La fecha viene como yyyy-MM-dd: el mes es la parte del medio
+let analysisByMonth: (Iterator<TradeType>) -> ArrayList<(String, Int64, Float64)> = { trades =>
+    aggregate(trades, { t => "Mes " + t[0].split("-")[1] })
+}
+
+// Ordena de mayor a menor monto total
+let sortFun: (ArrayList<(String, Int64, Float64)>) -> Array<(String, Int64, Float64)> = { stats =>
+    sort<(String, Int64, Float64)>(stats, by: {a, b =>
+        if (a[2] > b[2]) { Ordering.LT } else if (a[2] < b[2]) { Ordering.GT } else { Ordering.EQ }
+    }, stable: true)
+    stats.toArray()
+}
+
+let printResult: (Array<(String, Int64, Float64)>) -> Unit = { analysis =>
+    println("========== Estadísticas ==========")
+    if (analysis.size > 0) {
+        let maxTotal = analysis[0][2]
+        for (element in analysis) {
+            println("${element[0]} Cantidad: ${element[1]} Total: ${element[2].format(".2")} RMB")
+            println("|" * Int64(element[2] / maxTotal * 40.0))
+        }
+    }
+}
+
+main(): Int64 {
+    let csvFilename = "./smart_retail_sales.csv"
+    println("Leyendo transacciones...")
+    if (!readTradeFile(csvFilename) || rawdata.size == 0) {
+        println("Falló la lectura de datos.")
+        return 1
+    }
+    println("Lectura exitosa, registros: ${rawdata.size}")
+    while (true) {
+        println("========== Procesamiento por lotes ==========")
+        println("Menú: [1] Por región [2] Por producto [3] Por mes [4] Salir")
+        let order = getStdIn().readln() ?? ""
+        match (order) {
+            case "1" => rawdata |> tradeSuccessFilter |> analysisByLocation |> sortFun |> printResult
+            case "2" => rawdata |> tradeSuccessFilter |> analysisByGood |> sortFun |> printResult
+            case "3" => rawdata |> tradeSuccessFilter |> analysisByMonth |> sortFun |> printResult
+            case "4" => break
+            case _ => println("Comando inválido, intente de nuevo")
+        }
+    }
+    return 0
 }
 ```
 
@@ -1952,7 +2284,7 @@ Para la entrega final: pestaña **Actions → Certificación Cangjie CI → Run 
 | YAML del workflow y compose válidos; scripts `bash -n` correctos; paréntesis/llaves balanceados en todos los `.cj` | ✔ |
 | `.gitignore` excluye `target/`, binarios, `.DS_Store`, `__MACOSX` y no excluye PNG/PDF | ✔ |
 | `.gitattributes` fuerza LF en `.cj/.sh/.toml` (evita errores de `\r` en CI) | ✔ |
-| Compilación real con SDK 1.2.1 | ✔ Windows: los 5 proyectos compilan con `cjpm build` y `hola-cjc` con `cjc`. Linux (SDK 1.2.1 x64): `scripts/probar-todo.sh` termina con código 0: build + run + **16/16 pruebas en verde** (cjpmDemo 1, proyecto-3 8, proyecto-4 7); las 3 tareas del proyecto 2 se ejecutan con entrada simulada. |
+| Compilación real con SDK 1.2.1 | ✔ Windows: los 5 proyectos compilan con `cjpm build` y `hola-cjc` con `cjc`. Linux (SDK 1.2.1 x64): `scripts/probar-todo.sh` termina con código 0: build + run + **8/8 pruebas en verde** (cjpmDemo 1, proyecto-4 7); las tareas de los proyectos 2 y 3 se ejecutan con entrada simulada. |
 | Declaración `package` | ✔ Cada `.cj` empieza con `package <nombre del cjpm.toml>`: el SDK 1.2.1 la exige cuando el paquete tiene varios archivos. |
 | Evidencias 00, 02–05 y `certificado.pdf` | ⏳ Pendientes: deben salir de tu cuenta real |
 
@@ -1983,7 +2315,7 @@ Para la entrega final: pestaña **Actions → Certificación Cangjie CI → Run 
 - [x] `evidencias/00-ficha-del-curso.png`
 - [x] `evidencias/01-proyecto-1.png`
 - [x] `evidencias/02-proyecto-2.png` + fila del proyecto 2 en el README
-- [ ] `evidencias/03-proyecto-3.png` + fila del proyecto 3
+- [x] `evidencias/03-proyecto-3.png` + fila del proyecto 3
 - [ ] `evidencias/04-proyecto-4.png` + fila del proyecto 4
 - [ ] `evidencias/05-examen-final.png` + nota del examen
 - [ ] `certificado.pdf` descargado de Huawei Talent

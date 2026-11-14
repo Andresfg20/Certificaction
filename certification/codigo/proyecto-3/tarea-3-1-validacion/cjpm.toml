@@ -1,7 +1,7 @@
 [package]
   cjc-version = "1.2.0"
-  name = "data_analysis"
-  description = "Proyecto 3 - System Data Analysis: estadísticas y anomalías de CPU y memoria"
+  name = "tarea_3_1_validacion"
+  description = "Proyecto 3 - System Data Analysis"
   version = "1.0.0"
   target-dir = ""
   src-dir = ""
